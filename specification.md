@@ -187,11 +187,11 @@ unit. The re-mapping procedure (or shuffling procedure) is described as follows:
 3. The token holder sends these k tokens to the controller wallet. 
 4. The controller destroys each token amount *xj* of *IDj* (with the `destroyamount` wallet RPC). 
 5. The asset IDs are then re-mapped:
-⋅⋅* The total amount (*xt*) of the fragments is calculated. 
-⋅⋅* Of all the *N* listed asset mappings, the one with the smallest mass which is greater than *xt* is identified (*As*). 
-⋅⋅* The mass of *As* is reduced by *xt:  ms <- ms-xt* (*xt* of *As* is then delivered to the redeemer). 
-⋅⋅* For each asset *Aj* (*j = 1, ..., k*) a new mapping is created, which links IDs to the assets corresponding to the destroyed tokens: *IDs <-> (Aj,m <- xj)*
-⋅⋅* For each mapping of asset *Aj* to *IDj* (*j = 1, ..., k*) the mass *mj* is reduced corresponding to the destroyed tokens (and the reallocated mass): *mj <- mj-xj* 
+   - The total amount (*xt*) of the fragments is calculated. 
+   - Of all the *N* listed asset mappings, the one with the smallest mass which is greater than *xt* is identified (*As*). 
+   - The mass of *As* is reduced by *xt:  ms <- ms-xt* (*xt* of *As* is then delivered to the redeemer). 
+   - For each asset *Aj* (*j = 1, ..., k*) a new mapping is created, which links IDs to the assets corresponding to the destroyed tokens: *IDs <-> (Aj,m <- xj)*
+   - For each mapping of asset *Aj* to *IDj* (*j = 1, ..., k*) the mass *mj* is reduced corresponding to the destroyed tokens (and the reallocated mass): *mj <- mj-xj* 
 
 ### Asset map object usage
 
