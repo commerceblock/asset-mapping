@@ -5,6 +5,7 @@ import pybitcointools as bc
 from mnemonic.mnemonic import Mnemonic
 import binascii
 import json
+from datetime import datetime
 
 def controller_keygen():
 #function to generate a random mnemonic recovery phrase
@@ -26,7 +27,13 @@ def controller_recover_key(recovery_phrase):
     pubkey = bc.privkey_to_pubkey(privkey)
     return privkey, pubkey
 
-
+def tgr():
+    rate = 0.01
+    dayzero = datetime(2018, 8, 30, 0, 1)
+    today = datetime.now()
+    days = (today-dayzero).days
+    tgrf = (1.0 + rate)**(days/365.0)
+    return tgrf
 
 
 class ConPubKey(object):
@@ -83,14 +90,25 @@ class MapDB(object):
         
     def add_asset(self,asset_ref,year_ref,mass,tokenid,location):
 #add a new asset to the object
-        nassets = len(map["assets"])
+#a new entry number is determined
+        maxasnum = 1
+        for key in self.map["assets"]:
+            if key > maxasnum: maxasnum = key
         ref = str(asset_ref)+'-'+str(year_ref)
 #the reference is a concatination of the year and bar serial number
-        self.map["assets"][nassets+1] = {}
-        self.map["assets"][nassets+1]["ref"] = ref
-        self.map["assets"][nassets+1]["mass"] = mass
-        self.map["assets"][nassets+1]["tokenid"] = tokenid
-        self.map["assets"][nassets+1]["location"] = location
+        self.map["assets"][maxasnum+1] = {}
+        self.map["assets"][maxasnum+1]["ref"] = ref
+        self.map["assets"][maxasnum+1]["mass"] = mass
+        self.map["assets"][maxasnum+1]["tokenid"] = tokenid
+        self.map["assets"][maxasnum+1]["location"] = location
+
+    def remove_asset(self,asset_reference):
+#function to remove a paticular asset reference from the object
+        print("remove asset")
+
+
+
+
         
     def verify_multisig(self,controller_pubkeys):
 #function to verify the signatures of the object against the policy
@@ -142,7 +160,7 @@ class MapDB(object):
 #retrieve and load json object from the public API
         print("retrieve json from public URL")
 
-    def remap_assets(self,rtoken_array,asset_reference):
+    def remap_assets(self,btoken_array,asset_reference):
         """
         remapping algorithm
 
@@ -152,7 +170,25 @@ class MapDB(object):
 
         the return value is an array of the remapped tokens
         """
-        
+#confirm redemption token values matches asset mass against tgr
+        asset_mass = []
+        total_mass = 0.0
+        dtokens = []
+        for i,j in self.map["assets"]:
+            if j["ref"] == asset_reference:
+                asset_mass.append(j["mass"])
+                dtokens.append(j["tokenid"])
+
+#remove the asset from the object
+        rmasset = []
+        for i,j in self.map["assets"]:
+            if j["ref"] == asset_reference:
+                rmasset.append(i)
+        for num in rmasset:
+            del self.map["assets"][num]
+
+
+
 
     def upload_json(self):
 #function to upload the json object to the public url
