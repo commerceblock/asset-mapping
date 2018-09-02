@@ -104,12 +104,13 @@ class MapDB(object):
 
     def remove_asset(self,asset_reference):
 #function to remove a paticular asset reference from the object
-        print("remove asset")
+        rmasset = []
+        for i,j in self.map["assets"]:
+            if j["ref"] == asset_reference:
+                rmasset.append(i)
+                for num in rmasset:
+            del self.map["assets"][num]
 
-
-
-
-        
     def verify_multisig(self,controller_pubkeys):
 #function to verify the signatures of the object against the policy
 #and supplied public key list: returns validity
