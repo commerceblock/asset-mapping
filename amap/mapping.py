@@ -27,11 +27,10 @@ def controller_recover_key(recovery_phrase):
     pubkey = bc.privkey_to_pubkey(privkey)
     return privkey, pubkey
 
-def tgr():
+def tgr(rdate = datetime.now()):
     rate = 0.01
     dayzero = datetime(2018, 8, 30, 0, 1)
-    today = datetime.now()
-    days = (today-dayzero).days
+    days = (rdate-dayzero).days
     tgrf = (1.0 + rate)**(days/365.0)
     return tgrf
 
@@ -105,11 +104,11 @@ class MapDB(object):
     def remove_asset(self,asset_reference):
 #function to remove a paticular asset reference from the object
         rmasset = []
-        for i,j in self.map["assets"]:
+        for i,j in self.map["assets"].items():
             if j["ref"] == asset_reference:
                 rmasset.append(i)
                 for num in rmasset:
-            del self.map["assets"][num]
+                    del self.map["assets"][num]
 
     def verify_multisig(self,controller_pubkeys):
 #function to verify the signatures of the object against the policy
@@ -161,11 +160,11 @@ class MapDB(object):
 #retrieve and load json object from the public API
         print("retrieve json from public URL")
 
-    def remap_assets(self,btoken_array,asset_reference):
+    def remap_assets(self,burnt_tokens,asset_reference,redemption_date):
         """
         remapping algorithm
 
-        rtoken_array is an array of burt tokens with corresponding amounts
+        rtoken_array is an array of burnt tokens with corresponding amounts
 
         asset_reference is the reference ID of the redeemed asset
 
@@ -175,20 +174,73 @@ class MapDB(object):
         asset_mass = []
         total_mass = 0.0
         dtokens = []
-        for i,j in self.map["assets"]:
+        for i,j in self.map["assets"].items():
             if j["ref"] == asset_reference:
                 asset_mass.append(j["mass"])
+                total_mass += j["mass"]
                 dtokens.append(j["tokenid"])
+        
+        total_tokens = 0.0
+        for it in range(len(burnt_tokens)):
+            total_tokens += burnt_tokens[it][1]
+        
+        if total_tokens < total_mass*tgr(redemption_date)/400.0:
+            print("Error: insufficient tokens for asset redemption ")
+            return False
+
+        redemption_tolerance = 0.001
+        if total_tokens > total_mass*tgr(redemption_date) + redemption_tolerance:
+            print("Error: excess tokens for redemption")
+            return False
+
+#get the assets pointing to the burnt token array and reduce the masses
+        btasset_list = []
+        btasset_mass = []
+        for it in range(len(burnt_tokens)):
+            for i,j in self.map["assets"].items():
+                if j["tokenid"] == burnt_tokens[it][0]:
+                    btasset_list.append(j["ref"])
+                    if j["mass"] > burnt_tokens[it][1]*400.0*tgr(redemption_date):
+                        j["mass"] -= burnt_tokens[it][1]*400.0*tgr(redemption_date)
+                        btasset_mass.append(burnt_tokens[it][1]*400.0*tgr(redemption_date))
+                    else:
+                        burnt_tokens[it][1] -= j["mass"]/(400*tgr(redemption_date))
+                        btasset_mass.append(j["mass"])
+                        j["mass"] = 0.0
+
+#create new mappings for the dangling tokens. For each dangling token we add (or modify) a 
+#an entry created from the the btasset_list
+
 
 #remove the asset from the object
         rmasset = []
-        for i,j in self.map["assets"]:
+        for i,j in self.map["assets"].items():
             if j["ref"] == asset_reference:
                 rmasset.append(i)
         for num in rmasset:
             del self.map["assets"][num]
 
+        for num in rmlst:
+            del self.map["assets"][num]
 
+
+"""
+So - for the asset that has been removed, we have a list of token ids that pointed to it (and the mass)
+This is the dangling token list (in the first example this was a signle token but it could be multiple tokens). 
+
+We also have a list of burnt token IDs (and the burn amounts) - each of these pointed to an asset. 
+This is the dangling asset list. 
+
+These first token IDs (that pointed to the removed asset) then need to point to the assets corresponding to the burnt tokens. 
+
+So we need to match up the dangling token list with the dangling asset list. 
+
+Initially, the dangling assets need to be modified to correct the loss of tokens (this requires these entries to be modified to reduce the mass associated with the burnt tokens. 
+
+Each correction, then needs to be made up with a new entry, taking the reduced mass from the previous step, and linking it to the token ids left dangling from the removed asset. 
+
+Need to take care of: token ids pointing to multiple assets, and asset ids pointing to multiple tokens. 
+"""
 
 
     def upload_json(self):
