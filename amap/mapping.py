@@ -107,8 +107,8 @@ class MapDB(object):
         for i,j in self.map["assets"].items():
             if j["ref"] == asset_reference:
                 rmasset.append(i)
-                for num in rmasset:
-                    del self.map["assets"][num]
+        for num in rmasset:
+            del self.map["assets"][num]
 
     def verify_multisig(self,controller_pubkeys):
 #function to verify the signatures of the object against the policy
@@ -171,12 +171,12 @@ class MapDB(object):
         the return value is an array of the remapped tokens
         """
 #confirm redemption token values matches asset mass against tgr
-        asset_mass = []
+        dasset_mass = []
         total_mass = 0.0
         dtokens = []
         for i,j in self.map["assets"].items():
             if j["ref"] == asset_reference:
-                asset_mass.append(j["mass"])
+                dasset_mass.append(j["mass"])
                 total_mass += j["mass"]
                 dtokens.append(j["tokenid"])
         
@@ -210,9 +210,34 @@ class MapDB(object):
 
 #create new mappings for the dangling tokens. For each dangling token we add (or modify) a 
 #an entry created from the the btasset_list
+        new_map = []
+        bt_it = 0
+        for it in range(len(dtokens)):
+            if btasset_mass[bt_it] >= dasset_mass[it]:
+                new_entry = []
+                new_entry.append(dtokens[it])
+                new_entry.append(btasset_list[bt_it])
+                new_entry.append(dasset_mass[it])
+                btasset_mass[bt_it] -= dasset_mass[it]
+                new_map.append(new_entry)
+            else:
+                for it2 in range(len(btasset_list)):
+                    new_entry = []
+                    new_entry.append(dtoken[it])
+                    new_entry.append(btasset_list[bt_it])
+                    if btasset_mass[bt_it] <= dasset_mass[it]:
+                        new_entry.append(btasset_mass[bt_it])
+                        dasset_mass[it] -= btasset_mass[bt_it]
+                        bt_it += 1
+                        new_map.append(new_entry)
+                    else:
+                        new_entry.append(dasset_mass[it])
+                        btasset_mass[bt_it] -= dasset_mass[it]
+                        new_map.append(new_entry)
+                        break
+                    if bt_it == len(btasset_list): break
 
-
-#remove the asset from the object
+#remove the asset from the object                                                                                     
         rmasset = []
         for i,j in self.map["assets"].items():
             if j["ref"] == asset_reference:
@@ -220,28 +245,28 @@ class MapDB(object):
         for num in rmasset:
             del self.map["assets"][num]
 
-        for num in rmlst:
-            del self.map["assets"][num]
+#update the mapping object with the new mappings: if a mapping already exists then modify it
+#if a mapping is new, then create a new entry. 
 
-
-"""
-So - for the asset that has been removed, we have a list of token ids that pointed to it (and the mass)
-This is the dangling token list (in the first example this was a signle token but it could be multiple tokens). 
-
-We also have a list of burnt token IDs (and the burn amounts) - each of these pointed to an asset. 
-This is the dangling asset list. 
-
-These first token IDs (that pointed to the removed asset) then need to point to the assets corresponding to the burnt tokens. 
-
-So we need to match up the dangling token list with the dangling asset list. 
-
-Initially, the dangling assets need to be modified to correct the loss of tokens (this requires these entries to be modified to reduce the mass associated with the burnt tokens. 
-
-Each correction, then needs to be made up with a new entry, taking the reduced mass from the previous step, and linking it to the token ids left dangling from the removed asset. 
-
-Need to take care of: token ids pointing to multiple assets, and asset ids pointing to multiple tokens. 
-"""
-
+        for entry in new_map:
+            if entry[2] < 0.0:
+                print("Error: negative mass after re-mapping")
+                return False
+            cntr = 0
+            maxasnum = 1
+            for i,j in self.map["assets"].items():
+                if i > maxasnum: maxasnum = key
+                if j["ref"] == entry[1] and j["tokenid"] == entry[0]:
+                    if cntr >= 1:
+                        print("Error: repeated asset-token mapping in object")
+                        return False
+                    j["mass"] += entry[2]
+                    cntr += 1
+            if cntr == 0:
+                self.map["assets"][maxasnum+1] = {}
+                self.map["assets"][maxasnum+1]["ref"] = entry[1]
+                self.map["assets"][maxasnum+1]["mass"] = entry[2]
+                self.map["assets"][maxasnum+1]["tokenid"] = entry[0]
 
     def upload_json(self):
 #function to upload the json object to the public url
