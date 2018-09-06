@@ -28,6 +28,8 @@ def controller_recover_key(recovery_phrase):
     return privkey, pubkey
 
 def tgr(rdate = datetime.now()):
+#function to return the TGR at the supplied date. 
+#Without argument it returns the current TGR. 
     rate = 0.01
     dayzero = datetime(2018, 8, 30, 0, 1)
     days = (rdate-dayzero).days
@@ -56,7 +58,7 @@ class ConPubKey(object):
     def export_json(self,filename):
 #export the list as a json file
         with open(filename,'w') as file:
-            json.dumps(self.jsondata,file)
+            json.dump(self.jsondata,file)
             
     def load_genesis(self):
 #connect to the ocean sidechain client and load the pubkey list
