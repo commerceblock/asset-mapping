@@ -87,7 +87,7 @@ class MapDB(object):
         self.map["sigs"] = {}
         self.map["time"] = time.time()
         
-    def add_asset(self,asset_ref,year_ref,mass,tokenid,location):
+    def add_asset(self,asset_ref,year_ref,mass,tokenid,manufacturer):
 #add a new asset to the object
 #a new entry number is determined
         maxasnum = 1
@@ -95,20 +95,32 @@ class MapDB(object):
             if key > maxasnum: maxasnum = key
         ref = str(asset_ref)+'-'+str(year_ref)
 #the reference is a concatination of the year and bar serial number
+        for i,j in self.map["assets"].items():
+            if j["ref"] == ref:
+                print("Error: reference already used in mapping")
+                return False
+
         self.map["assets"][maxasnum+1] = {}
         self.map["assets"][maxasnum+1]["ref"] = ref
         self.map["assets"][maxasnum+1]["mass"] = mass
         self.map["assets"][maxasnum+1]["tokenid"] = tokenid
-        self.map["assets"][maxasnum+1]["location"] = location
+        self.map["assets"][maxasnum+1]["man"] = manufacturer
+        return True
 
     def remove_asset(self,asset_reference):
 #function to remove a paticular asset reference from the object
         rmasset = []
+        count = 0
         for i,j in self.map["assets"].items():
             if j["ref"] == asset_reference:
                 rmasset.append(i)
+                count += 1
+        if count == 0:
+            print("Error: asset reference not present in object")
+            return False
         for num in rmasset:
             del self.map["assets"][num]
+        return True
 
     def verify_multisig(self,controller_pubkeys):
 #function to verify the signatures of the object against the policy
@@ -196,10 +208,12 @@ class MapDB(object):
 #get the assets pointing to the burnt token array and reduce the masses
         btasset_list = []
         btasset_mass = []
+        btman_list = []
         for it in range(len(burnt_tokens)):
             for i,j in self.map["assets"].items():
                 if j["tokenid"] == burnt_tokens[it][0]:
                     btasset_list.append(j["ref"])
+                    btman_list.append(j["man"])
                     if j["mass"] > burnt_tokens[it][1]*400.0*tgr(redemption_date):
                         j["mass"] -= burnt_tokens[it][1]*400.0*tgr(redemption_date)
                         btasset_mass.append(burnt_tokens[it][1]*400.0*tgr(redemption_date))
@@ -217,6 +231,7 @@ class MapDB(object):
                 new_entry = []
                 new_entry.append(dtokens[it])
                 new_entry.append(btasset_list[bt_it])
+                new_entry.append(btman_list[bt_it])
                 new_entry.append(dasset_mass[it])
                 btasset_mass[bt_it] -= dasset_mass[it]
                 new_map.append(new_entry)
@@ -225,6 +240,7 @@ class MapDB(object):
                     new_entry = []
                     new_entry.append(dtoken[it])
                     new_entry.append(btasset_list[bt_it])
+                    new_entry.append(btman_list[bt_it])
                     if btasset_mass[bt_it] <= dasset_mass[it]:
                         new_entry.append(btasset_mass[bt_it])
                         dasset_mass[it] -= btasset_mass[bt_it]
@@ -237,7 +253,8 @@ class MapDB(object):
                         break
                     if bt_it == len(btasset_list): break
 
-#remove the asset from the object                                                                                     
+#remove the asset from the object
+
         rmasset = []
         for i,j in self.map["assets"].items():
             if j["ref"] == asset_reference:
@@ -260,13 +277,14 @@ class MapDB(object):
                     if cntr >= 1:
                         print("Error: repeated asset-token mapping in object")
                         return False
-                    j["mass"] += entry[2]
+                    j["mass"] += entry[3]
                     cntr += 1
             if cntr == 0:
                 self.map["assets"][maxasnum+1] = {}
                 self.map["assets"][maxasnum+1]["ref"] = entry[1]
-                self.map["assets"][maxasnum+1]["mass"] = entry[2]
+                self.map["assets"][maxasnum+1]["mass"] = entry[3]
                 self.map["assets"][maxasnum+1]["tokenid"] = entry[0]
+                self.map["assets"][maxasnum+1]["man"] = entry[2]
 
     def upload_json(self):
 #function to upload the json object to the public url
