@@ -30,3 +30,4 @@ map_obj.sign_db(c3_privkey,3)
 
 map_obj.print_json()
 
+map_obj.export_json('map.json')

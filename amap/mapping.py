@@ -39,7 +39,7 @@ def tgr(rdate = datetime.now()):
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
-    def __init__(self,n_multisig,m_multisig,pubkeylist):
+    def __init__(self,n_multisig=0,m_multisig=0,pubkeylist=[]):
 #initiate the object with the multisig parameters and list of publc keys
         self.jsondata = {}
         self.jsondata["n"] = n_multisig
@@ -72,9 +72,8 @@ class ConPubKey(object):
     def list_keys(self):
 #return the pubkeys as a list
         list = []
-        numkeys = len(self.jsondata["pubkeys"])
-        for it in range(numkeys):
-            list.append(self.jsondata["pubkeys"][it+1])
+        for i,j in self.jsondata["pubkeys"].items():
+            list.append(j)
         return list
 
 
@@ -132,19 +131,18 @@ class MapDB(object):
 #function to verify the signatures of the object against the policy
 #and supplied public key list: returns validity
         nsig = len(self.map["sigs"])
-        if nsig <= self.map["n"]:
+        if nsig < self.map["n"]:
             print("Error: insufficient signatures")
-            return 0
+            return False
 #the signature is generated over the asset list json object concatinated with the policy and time
-        jsonstring = json.dumps(self["assets"].maps,sort_keys=True)
+        jsonstring = json.dumps(self.map["assets"],sort_keys=True)
         jsonstring += str(self.map["n"]) + str(self.map["m"]) + str(self.map["time"])
         strhash = bc.sha256(jsonstring)
         nvalid = 0
 #check all possible combinations of public keys and signatures
-        for key in controller_pubkeys.list_keys():
-            for it in range(nsig):
-                sig = self.map["sigs"][it+1]
-                if bc.ecdsa_verify(hash,sig,key): nvalid += 1
+        for key in controller_pubkeys:
+            for i,j in self.map["sigs"].items():
+                if bc.ecdsa_verify(strhash,j,key): nvalid += 1
         if nvalid >= self.map["n"]:
             return True
         else:
@@ -206,11 +204,13 @@ class MapDB(object):
         for it in range(len(burnt_tokens)):
             total_tokens += burnt_tokens[it][1]
         
-        if total_tokens < total_mass*tgr(redemption_date)/400.0:
+        if total_tokens < round(total_mass*tgr(redemption_date)/400.0,9):
+            print("Total tokens: "+str(total_tokens))
+            print("Total converted mass: "+str(round(total_mass*tgr(redemption_date)/400.0),9))
             print("Error: insufficient tokens for asset redemption ")
             return False
 
-        redemption_tolerance = 0.001
+        redemption_tolerance = 0.000001
         if total_tokens > total_mass*tgr(redemption_date) + redemption_tolerance:
             print("Error: excess tokens for redemption")
             return False
@@ -224,11 +224,11 @@ class MapDB(object):
                 if j["tokenid"] == burnt_tokens[it][0]:
                     btasset_list.append(j["ref"])
                     btman_list.append(j["man"])
-                    if j["mass"] > burnt_tokens[it][1]*400.0*tgr(redemption_date):
-                        j["mass"] -= burnt_tokens[it][1]*400.0*tgr(redemption_date)
-                        btasset_mass.append(burnt_tokens[it][1]*400.0*tgr(redemption_date))
+                    if j["mass"] > burnt_tokens[it][1]*400.0/tgr(redemption_date):
+                        j["mass"] -= burnt_tokens[it][1]*400.0/tgr(redemption_date)
+                        btasset_mass.append(burnt_tokens[it][1]*400.0/tgr(redemption_date))
                     else:
-                        burnt_tokens[it][1] -= j["mass"]/(400*tgr(redemption_date))
+                        burnt_tokens[it][1] -= j["mass"]*tgr(redemption_date)/400.0
                         btasset_mass.append(j["mass"])
                         j["mass"] = 0.0
 
@@ -248,7 +248,7 @@ class MapDB(object):
             else:
                 for it2 in range(len(btasset_list)):
                     new_entry = []
-                    new_entry.append(dtoken[it])
+                    new_entry.append(dtokens[it])
                     new_entry.append(btasset_list[bt_it])
                     new_entry.append(btman_list[bt_it])
                     if btasset_mass[bt_it] <= dasset_mass[it]:
@@ -282,7 +282,9 @@ class MapDB(object):
             cntr = 0
             maxasnum = 1
             for i,j in self.map["assets"].items():
-                if i > maxasnum: maxasnum = key
+                print i
+                print maxasnum
+                if int(i) > maxasnum: maxasnum = int(i)
                 if j["ref"] == entry[1] and j["tokenid"] == entry[0]:
                     if cntr >= 1:
                         print("Error: repeated asset-token mapping in object")
@@ -290,6 +292,7 @@ class MapDB(object):
                     j["mass"] += entry[3]
                     cntr += 1
             if cntr == 0:
+                print maxasnum
                 self.map["assets"][maxasnum+1] = {}
                 self.map["assets"][maxasnum+1]["ref"] = entry[1]
                 self.map["assets"][maxasnum+1]["mass"] = entry[3]
