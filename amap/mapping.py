@@ -109,7 +109,7 @@ class MapDB(object):
         self.map["assets"][maxasnum+1]["man"] = manufacturer
         return True
 
-    def update_time(ntime = time.time()):
+    def update_time(self,ntime = time.time()):
 #function to update the time-stamp of the object
         self.map["time"] = ntime
 
@@ -152,7 +152,7 @@ class MapDB(object):
 
     def verify_blockchain_commitment(self,commit):
 #function to verify the hash of the entire object
-        jsonstring = json.dumps(self.maps,sort_keys=True)
+        jsonstring = json.dumps(self.map,sort_keys=True)
         strhash = bc.sha256(jsonstring)
         return commit == strhash
 
@@ -163,7 +163,7 @@ class MapDB(object):
 
     def sign_db(self,privkey,index):
 #function to add a signature to the mapping object generated from the supplied key
-        jsonstring = json.dumps(self["assets"].maps,sort_keys=True)
+        jsonstring = json.dumps(self.map["assets"],sort_keys=True)
         jsonstring += str(self.map["n"]) + str(self.map["m"]) +str(self.map["time"])
         strhash = bc.sha256(jsonstring)
         sig = bc.ecdsa_sign(strhash,privkey)
@@ -172,7 +172,7 @@ class MapDB(object):
     def export_json(self,filename):
 #function to save json object to file
         with open(filename,'w') as file:
-            json.dumps(self.map,file)
+            json.dump(self.map,file)
 
     def print_json(self):
 #function to output the full json object

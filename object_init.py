@@ -60,3 +60,6 @@ print("  "+token_id5)
 map_obj.add_asset(553194,2017,405.392,token_id5,"Acme")
 print("Total mass: "+str(map_obj.get_total_mass()))
 map_obj.print_json()
+
+print("Export object")
+map_obj.export_json('map.json')
