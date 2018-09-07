@@ -92,7 +92,7 @@ class MapDB(object):
     def add_asset(self,asset_ref,year_ref,mass,tokenid,manufacturer):
 #add a new asset to the object
 #a new entry number is determined
-        maxasnum = 1
+        maxasnum = 0
         for key in self.map["assets"]:
             if key > maxasnum: maxasnum = key
         ref = str(asset_ref)+'-'+str(year_ref)
@@ -108,6 +108,10 @@ class MapDB(object):
         self.map["assets"][maxasnum+1]["tokenid"] = tokenid
         self.map["assets"][maxasnum+1]["man"] = manufacturer
         return True
+
+    def update_time(ntime = time.time()):
+#function to update the time-stamp of the object
+        self.map["time"] = ntime
 
     def remove_asset(self,asset_reference):
 #function to remove a paticular asset reference from the object
@@ -169,6 +173,10 @@ class MapDB(object):
 #function to save json object to file
         with open(filename,'w') as file:
             json.dumps(self.map,file)
+
+    def print_json(self):
+#function to output the full json object
+        print json.dumps(self.map,sort_keys=True,indent=4)
         
     def get_json(self):
 #retrieve and load json object from the public API
@@ -295,24 +303,24 @@ class MapDB(object):
     def get_total_mass(self):
 #function to return the total mass of all assets listed in the object
         tmass = 0.0
-        for it in range(len(self.map["assets"])):
-            tmass += self.map["assets"][it+1]["mass"]
+        for i,j in self.map["assets"].items():
+            tmass += j["mass"]
         return tmass
 
     def get_mass_tokenid(self,tokenid):
 #function to return the total mass relating to a specific token ID
         tmass = 0.0
-        for it in range(len(self.map["assets"])):
-            if self.map["assets"][it+1]["tokenid"] == tokenid:
-                tmass += self.map["assets"][it+1]["mass"]
+        for i,j in self.map["assets"].items():
+            if j["tokenid"] == tokenid:
+                tmass += j["mass"]
         return tmass
 
     def get_mass_assetid(self,assetid):
 #function to return the total mass relating to a specific asset ID
         tmass = 0.0
-        for it in range(len(self.map["assets"])):
-            if self.map["assets"][it+1]["ref"] == assetid:
-                tmass += self.map["assets"][it+1]["mass"]
+        for i,j in self.map["assets"].items():
+            if j["ref"] == assetid:
+                tmass += j["mass"]
         return tmass
 
 def diff_mapping(mapping_object_new,mapping_object_old):
