@@ -94,8 +94,8 @@ class MapDB(object):
         maxasnum = 0
         for key in self.map["assets"]:
             if key > maxasnum: maxasnum = key
-        ref = str(asset_ref)+'-'+str(year_ref)
-#the reference is a concatination of the year and bar serial number
+        ref = str(asset_ref)+'-'+str(year_ref)+'-'+str(manufacturer)
+#the reference is a concatination of the year and bar serial number and manufacturer
         for i,j in self.map["assets"].items():
             if j["ref"] == ref:
                 print("Error: reference already used in mapping")
@@ -105,7 +105,6 @@ class MapDB(object):
         self.map["assets"][maxasnum+1]["ref"] = ref
         self.map["assets"][maxasnum+1]["mass"] = mass
         self.map["assets"][maxasnum+1]["tokenid"] = tokenid
-        self.map["assets"][maxasnum+1]["man"] = manufacturer
         return True
 
     def update_time(self,ntime = time.time()):
@@ -218,12 +217,10 @@ class MapDB(object):
 #get the assets pointing to the burnt token array and reduce the masses
         btasset_list = []
         btasset_mass = []
-        btman_list = []
         for it in range(len(burnt_tokens)):
             for i,j in self.map["assets"].items():
                 if j["tokenid"] == burnt_tokens[it][0]:
                     btasset_list.append(j["ref"])
-                    btman_list.append(j["man"])
                     if j["mass"] > burnt_tokens[it][1]*400.0/tgr(redemption_date):
                         j["mass"] -= burnt_tokens[it][1]*400.0/tgr(redemption_date)
                         btasset_mass.append(burnt_tokens[it][1]*400.0/tgr(redemption_date))
@@ -241,7 +238,6 @@ class MapDB(object):
                 new_entry = []
                 new_entry.append(dtokens[it])
                 new_entry.append(btasset_list[bt_it])
-                new_entry.append(btman_list[bt_it])
                 new_entry.append(dasset_mass[it])
                 btasset_mass[bt_it] -= dasset_mass[it]
                 new_map.append(new_entry)
@@ -250,7 +246,6 @@ class MapDB(object):
                     new_entry = []
                     new_entry.append(dtokens[it])
                     new_entry.append(btasset_list[bt_it])
-                    new_entry.append(btman_list[bt_it])
                     if btasset_mass[bt_it] <= dasset_mass[it]:
                         new_entry.append(btasset_mass[bt_it])
                         dasset_mass[it] -= btasset_mass[bt_it]
@@ -289,15 +284,14 @@ class MapDB(object):
                     if cntr >= 1:
                         print("Error: repeated asset-token mapping in object")
                         return False
-                    j["mass"] += entry[3]
+                    j["mass"] += entry[2]
                     cntr += 1
             if cntr == 0:
                 print maxasnum
                 self.map["assets"][maxasnum+1] = {}
                 self.map["assets"][maxasnum+1]["ref"] = entry[1]
-                self.map["assets"][maxasnum+1]["mass"] = entry[3]
+                self.map["assets"][maxasnum+1]["mass"] = entry[2]
                 self.map["assets"][maxasnum+1]["tokenid"] = entry[0]
-                self.map["assets"][maxasnum+1]["man"] = entry[2]
 
     def upload_json(self):
 #function to upload the json object to the public url

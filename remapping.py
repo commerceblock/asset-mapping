@@ -8,7 +8,7 @@ map_obj.load_json('map.json')
 
 map_obj.print_json()
 
-print("Redemption of asset: 757628-2016")
+print("Redemption of asset: 757628-2016-Acme")
 print("  Mass: 400.031")
 rdate = datetime(2018, 9, 7, 0, 2)
 print("  Redemption date: "+str(rdate))
@@ -34,7 +34,7 @@ print("Total mass: "+str(map_obj.get_total_mass()-400.031))
 
 print("Token remapping")
 
-map_obj.remap_assets(burnt_tokens,"757628-2016",rdate)
+map_obj.remap_assets(burnt_tokens,"757628-2016-Acme",rdate)
 
 map_obj.print_json()
 
