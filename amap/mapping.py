@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import time
-import pybitcointools as bc
+import bitcoin as bc
 from mnemonic.mnemonic import Mnemonic
 import binascii
 import json
@@ -67,7 +67,7 @@ class ConPubKey(object):
     
     def print_keys(self):
 #print the pubkey json object
-        print json.dumps(self.jsondata,sort_keys=True,indent=4)
+        print(json.dumps(self.jsondata,sort_keys=True,indent=4))
     
     def list_keys(self):
 #return the pubkeys as a list
@@ -173,7 +173,7 @@ class MapDB(object):
 
     def print_json(self):
 #function to output the full json object
-        print json.dumps(self.map,sort_keys=True,indent=4)
+        print(json.dumps(self.map,sort_keys=True,indent=4))
         
     def get_json(self):
 #retrieve and load json object from the public API
@@ -277,8 +277,6 @@ class MapDB(object):
             cntr = 0
             maxasnum = 1
             for i,j in self.map["assets"].items():
-                print i
-                print maxasnum
                 if int(i) > maxasnum: maxasnum = int(i)
                 if j["ref"] == entry[1] and j["tokenid"] == entry[0]:
                     if cntr >= 1:
@@ -287,7 +285,6 @@ class MapDB(object):
                     j["mass"] += entry[2]
                     cntr += 1
             if cntr == 0:
-                print maxasnum
                 self.map["assets"][maxasnum+1] = {}
                 self.map["assets"][maxasnum+1]["ref"] = entry[1]
                 self.map["assets"][maxasnum+1]["mass"] = entry[2]
