@@ -6,6 +6,7 @@ from mnemonic.mnemonic import Mnemonic
 import binascii
 import json
 from datetime import datetime
+from datadiff import diff
 
 def controller_keygen():
 #function to generate a random mnemonic recovery phrase
@@ -92,8 +93,8 @@ class MapDB(object):
 #add a new asset to the object
 #a new entry number is determined
         maxasnum = 0
-        for key in self.map["assets"]:
-            if key > maxasnum: maxasnum = key
+        for i,j in self.map["assets"].items():
+            if int(i) > maxasnum: maxasnum = int(i)
         ref = str(asset_ref)+'-'+str(year_ref)+'-'+str(manufacturer)
 #the reference is a concatination of the year and bar serial number and manufacturer
         for i,j in self.map["assets"].items():
@@ -101,10 +102,10 @@ class MapDB(object):
                 print("Error: reference already used in mapping")
                 return False
 
-        self.map["assets"][maxasnum+1] = {}
-        self.map["assets"][maxasnum+1]["ref"] = ref
-        self.map["assets"][maxasnum+1]["mass"] = mass
-        self.map["assets"][maxasnum+1]["tokenid"] = tokenid
+        self.map["assets"][str(maxasnum+1)] = {}
+        self.map["assets"][str(maxasnum+1)]["ref"] = ref
+        self.map["assets"][str(maxasnum+1)]["mass"] = mass
+        self.map["assets"][str(maxasnum+1)]["tokenid"] = tokenid
         return True
 
     def update_time(self,ntime = time.time()):
@@ -174,8 +175,11 @@ class MapDB(object):
     def print_json(self):
 #function to output the full json object
         print(json.dumps(self.map,sort_keys=True,indent=4))
-        
+
     def get_json(self):
+        return self.map
+        
+    def download_json(self):
 #retrieve and load json object from the public API
         print("retrieve json from public URL")
 
@@ -318,4 +322,5 @@ class MapDB(object):
         return tmass
 
 def diff_mapping(mapping_object_new,mapping_object_old):
-    "this function compares two mapping objects and lists the changes"
+#function to compare two mapping objects and lists the changes
+    print(diff(mapping_object_new.get_json(),mapping_object_old.get_json()))
