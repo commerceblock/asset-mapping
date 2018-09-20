@@ -18,7 +18,8 @@ def controller_keygen():
     seed = Mnemonic.to_seed(recovery_phrase)
     privkey = bc.sha256(seed)
     pubkey = bc.privkey_to_pubkey(privkey)
-    return privkey, pubkey, recovery_phrase
+    cpubkey = bc.compress(pubkey)
+    return privkey, cpubkey, recovery_phrase
 
 def controller_recover_key(recovery_phrase):
 #function to recover a public and private key pair from a mnemonic phrase
@@ -26,7 +27,8 @@ def controller_recover_key(recovery_phrase):
     seed = Mnemonic.to_seed(recovery_phrase)
     privkey = bc.sha256(seed)
     pubkey = bc.privkey_to_pubkey(privkey)
-    return privkey, pubkey
+    cpubkey = bc.compress(pubkey)
+    return privkey, cpubkey
 
 def tgr(rdate = datetime.now()):
 #function to return the TGR at the supplied date. 
@@ -47,8 +49,6 @@ class ConPubKey(object):
         self.jsondata["m"] = m_multisig
         self.jsondata["pubkeys"] = {}
         for it in range(len(pubkeylist)):
-            print(it)
-            print(pubkeylist[it])
             self.jsondata["pubkeys"][it+1] = pubkeylist[it]
 
     def load_json(self,filename):
@@ -106,11 +106,15 @@ class MapDB(object):
         self.map["assets"][str(maxasnum+1)]["ref"] = ref
         self.map["assets"][str(maxasnum+1)]["mass"] = mass
         self.map["assets"][str(maxasnum+1)]["tokenid"] = tokenid
-        return True
+        return maxasnum+1
 
     def update_time(self,ntime = time.time()):
 #function to update the time-stamp of the object
         self.map["time"] = ntime
+
+    def get_time(self):
+#return the timestamp of the object
+        return self.map["time"]
 
     def remove_asset(self,asset_reference):
 #function to remove a paticular asset reference from the object

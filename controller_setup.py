@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
 import amap.mapping as am
+import amap.rpchost as rpc
+import json
 
 print("Set-up keys for a 2-of-3 multisig controller policy")
+print(" ")
 
 controller_pub_keys = []
 
@@ -47,6 +50,29 @@ con_obj = am.ConPubKey(2,3,controller_pub_keys)
 
 print("Exporting object to file")
 con_obj.export_json('controllers.json')
+print(" ")
 
 print("Print object")
 con_obj.print_keys()
+print(" ")
+
+print("Connecting to Ocean client")
+print(" ")
+rpcport = 18884
+rpcuser = 'user1'
+rpcpassword = 'password1'
+url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
+ocean = rpc.RPCHost(url)
+
+print("Creating 2-of-3 multisig address from the controller public keys")
+result = ocean.call('createmultisig',2,controller_pub_keys)
+print(" ")
+
+print("P2SH address: "+result['address'])
+print(" ")
+print("Redeem script: "+result['redeemScript'])
+print(" ")
+
+print("Exporting P2SH data to p2sh.json")
+with open('p2sh.json','w') as file:
+    json.dump(result,file)
