@@ -5,6 +5,7 @@ import bitcoin as bc
 from mnemonic.mnemonic import Mnemonic
 import binascii
 import json
+import calendar
 from datetime import datetime
 from datadiff import diff
 
@@ -31,14 +32,19 @@ def controller_recover_key(recovery_phrase):
     return privkey, cpubkey
 
 def tgr(rdate = datetime.now()):
-#function to return the TGR at the supplied date. 
-#Without argument it returns the current TGR. 
-    rate = 0.01
+#function to return the TGR at the supplied datetime. 
+#Without argument it returns the current TGR (based on the system clock)
+#
+#The rate is the inflation rate (not the demmurage rate) 
+    rate = 0.0101010101010101
+#dayzero is the precise time of launch (i.e. inflation calculated from this time)
+#(year, month, day, hour, minutes)
     dayzero = datetime(2018, 8, 30, 0, 1)
     days = (rdate-dayzero).days
-    tgrf = (1.0 + rate)**(days/365.0)
+    hours = (rdate-dayzero).seconds // 3600
+    hours_elapsed = days*24 + hours
+    tgrf = (1.0 + rate)**(hours_elapsed/(365*24))
     return tgrf
-
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
