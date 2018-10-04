@@ -237,11 +237,11 @@ class MapDB(object):
             for i,j in self.map["assets"].items():
                 if j["tokenid"] == burnt_tokens[it][0]:
                     btasset_list.append(j["ref"])
-                    if j["mass"] > burnt_tokens[it][1]*tgr(redemption_date):
-                        j["mass"] -= burnt_tokens[it][1]*tgr(redemption_date)
-                        btasset_mass.append(burnt_tokens[it][1]*tgr(redemption_date))
+                    if j["mass"] > burnt_tokens[it][1]*400.0/tgr(redemption_date):
+                        j["mass"] -= burnt_tokens[it][1]*400.0/tgr(redemption_date)
+                        btasset_mass.append(burnt_tokens[it][1]*400.0/tgr(redemption_date))
                     else:
-                        burnt_tokens[it][1] -= j["mass"]/tgr(redemption_date)
+                        burnt_tokens[it][1] -= j["mass"]*tgr(redemption_date)/400.0
                         btasset_mass.append(j["mass"])
                         j["mass"] = 0.0
 

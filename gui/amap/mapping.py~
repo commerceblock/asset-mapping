@@ -5,9 +5,7 @@ import bitcoin as bc
 from mnemonic.mnemonic import Mnemonic
 import binascii
 import json
-import calendar
 from datetime import datetime
-from datadiff import diff
 
 def controller_keygen():
 #function to generate a random mnemonic recovery phrase
@@ -19,8 +17,7 @@ def controller_keygen():
     seed = Mnemonic.to_seed(recovery_phrase)
     privkey = bc.sha256(seed)
     pubkey = bc.privkey_to_pubkey(privkey)
-    cpubkey = bc.compress(pubkey)
-    return privkey, cpubkey, recovery_phrase
+    return privkey, pubkey, recovery_phrase
 
 def controller_recover_key(recovery_phrase):
 #function to recover a public and private key pair from a mnemonic phrase
@@ -28,25 +25,17 @@ def controller_recover_key(recovery_phrase):
     seed = Mnemonic.to_seed(recovery_phrase)
     privkey = bc.sha256(seed)
     pubkey = bc.privkey_to_pubkey(privkey)
-    cpubkey = bc.compress(pubkey)
-    return privkey, cpubkey
+    return privkey, pubkey
 
 def tgr(rdate = datetime.now()):
-#function to return the TGR at the supplied datetime. 
-#Without argument it returns the current TGR (based on the system clock)
-#
-#The rate is the inflation rate (not the demmurage rate) 
-    rate = 0.0101010101010101
-#The zero ratio is the TGR at time zero
-    zeroratio = 400.0
-#dayzero is the precise time of launch (i.e. inflation calculated from this time)
-#(year, month, day, hour, minutes)
+#function to return the TGR at the supplied date. 
+#Without argument it returns the current TGR. 
+    rate = 0.01
     dayzero = datetime(2018, 8, 30, 0, 1)
     days = (rdate-dayzero).days
-    hours = (rdate-dayzero).seconds // 3600
-    hours_elapsed = days*24 + hours
-    tgrf = zeroratio/((1.0 + rate)**(hours_elapsed/(365.0*24.0)))
-    return tgrf,hours_elapsed
+    tgrf = (1.0 + rate)**(days/365.0)
+    return tgrf
+
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
@@ -57,6 +46,8 @@ class ConPubKey(object):
         self.jsondata["m"] = m_multisig
         self.jsondata["pubkeys"] = {}
         for it in range(len(pubkeylist)):
+            print(it)
+            print(pubkeylist[it])
             self.jsondata["pubkeys"][it+1] = pubkeylist[it]
 
     def load_json(self,filename):
@@ -101,8 +92,8 @@ class MapDB(object):
 #add a new asset to the object
 #a new entry number is determined
         maxasnum = 0
-        for i,j in self.map["assets"].items():
-            if int(i) > maxasnum: maxasnum = int(i)
+        for key in self.map["assets"]:
+            if key > maxasnum: maxasnum = key
         ref = str(asset_ref)+'-'+str(year_ref)+'-'+str(manufacturer)
 #the reference is a concatination of the year and bar serial number and manufacturer
         for i,j in self.map["assets"].items():
@@ -110,19 +101,15 @@ class MapDB(object):
                 print("Error: reference already used in mapping")
                 return False
 
-        self.map["assets"][str(maxasnum+1)] = {}
-        self.map["assets"][str(maxasnum+1)]["ref"] = ref
-        self.map["assets"][str(maxasnum+1)]["mass"] = mass
-        self.map["assets"][str(maxasnum+1)]["tokenid"] = tokenid
-        return maxasnum+1
+        self.map["assets"][maxasnum+1] = {}
+        self.map["assets"][maxasnum+1]["ref"] = ref
+        self.map["assets"][maxasnum+1]["mass"] = mass
+        self.map["assets"][maxasnum+1]["tokenid"] = tokenid
+        return True
 
     def update_time(self,ntime = time.time()):
 #function to update the time-stamp of the object
         self.map["time"] = ntime
-
-    def get_time(self):
-#return the timestamp of the object
-        return self.map["time"]
 
     def remove_asset(self,asset_reference):
 #function to remove a paticular asset reference from the object
@@ -191,7 +178,7 @@ class MapDB(object):
     def get_json(self):
         return self.map
         
-    def download_json(self):
+    def get_json(self):
 #retrieve and load json object from the public API
         print("retrieve json from public URL")
 
@@ -237,11 +224,11 @@ class MapDB(object):
             for i,j in self.map["assets"].items():
                 if j["tokenid"] == burnt_tokens[it][0]:
                     btasset_list.append(j["ref"])
-                    if j["mass"] > burnt_tokens[it][1]*tgr(redemption_date):
-                        j["mass"] -= burnt_tokens[it][1]*tgr(redemption_date)
-                        btasset_mass.append(burnt_tokens[it][1]*tgr(redemption_date))
+                    if j["mass"] > burnt_tokens[it][1]*400.0/tgr(redemption_date):
+                        j["mass"] -= burnt_tokens[it][1]*400.0/tgr(redemption_date)
+                        btasset_mass.append(burnt_tokens[it][1]*400.0/tgr(redemption_date))
                     else:
-                        burnt_tokens[it][1] -= j["mass"]/tgr(redemption_date)
+                        burnt_tokens[it][1] -= j["mass"]*tgr(redemption_date)/400.0
                         btasset_mass.append(j["mass"])
                         j["mass"] = 0.0
 
@@ -334,5 +321,4 @@ class MapDB(object):
         return tmass
 
 def diff_mapping(mapping_object_new,mapping_object_old):
-#function to compare two mapping objects and lists the changes
-    print(diff(mapping_object_new.get_json(),mapping_object_old.get_json()))
+    "this function compares two mapping objects and lists the changes"

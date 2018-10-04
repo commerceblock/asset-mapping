@@ -32,6 +32,11 @@ burnt_tokens.append(btoken2)
 
 print("Total mass: "+str(map_obj.get_total_mass()-400.031))
 
+
+#perform a token report to determine that the tokens have been successfully burnt
+
+
+
 print("Token remapping")
 
 map_obj.remap_assets(burnt_tokens,"757628-2016-Acme",rdate)

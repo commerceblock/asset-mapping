@@ -23,5 +23,3 @@ if map_obj.verify_multisig(key_list):
     print("Signatures verified")
 else:
     print("Verification failed")
-
-
