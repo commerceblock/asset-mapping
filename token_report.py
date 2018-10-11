@@ -29,10 +29,10 @@ utxorep = ocean.call('getutxoassetinfo')
 print(" ")
 print("Generate report")
 print(" ")
-tgr,hour = am.tgr()
-print("TGR = "+str("%.6f" % tgr)+" at hour "+str(hour))
+token_ratio,hour = am.token_ratio()
+print("Token ratio = "+str("%.6f" % token_ratio)+" at hour "+str(hour))
 print(" ")
-print("          Token ID                                                    Mass      Ex-Tokens    Chain-Tokens")
+print("          Token ID                                                Mass      Expected-Tokens    Chain-Tokens")
 print("-----------------------------------------------------------------------------------------------------------")
 
 map_dict = map_obj.get_json()
@@ -47,5 +47,5 @@ for entry in utxorep:
             mass += j["mass"]
             inmap = True
     if inmap:
-        exptoken = mass/tgr
-        print(asset+"  "+str("%.3f" % mass)+"   "+str("%.6f" % exptoken)+"   "+str("%.6f" % amount))
+        exptoken = mass/token_ratio
+        print(asset+"   "+str("%.3f" % mass)+"   "+str("%.6f" % exptoken)+"   "+str("%.6f" % amount))

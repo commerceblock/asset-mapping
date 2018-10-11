@@ -4,30 +4,49 @@ import amap.mapping as am
 import bitcoin as bc
 import amap.rpchost as rpc
 import json
+import time
+import boto3
+import sys
+from datetime import datetime
 
-print("Issue an asset: 2-of-3 controller multisig")
+print("Issue an new asset")
 print(" ")
-print("Controller 2")
+print("Controller 2: Confirmer")
 print(" ")
-print("Controller 2: Load the initial mapping object")
+
+print("Fetch the current mapping object - connecting to S3")
+s3 = boto3.resource('s3')
+s3.Bucket('cb-mapping').download_file('map.json','map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str(fmass))
+print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c'))
+con_keys = am.ConPubKey()
+con_keys.load_json('controllers.json')
+key_list = con_keys.list_keys()
+if map_obj.verify_multisig(key_list):
+    print("    Signatures verified")
+else:
+    print("    Signature verification failed")
 print(" ")
-print("Controller 2: Load the new mapping object")
+
+print("Load the updated mapping object from file")
 new_map_obj = am.MapDB(2,3)
 new_map_obj.load_json('ps1_map.json')
+nmass = map_obj.get_total_mass()
+print("    Mass difference: "+str(nmass-fmass))
+print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c'))
 print(" ")
-print("    Create comparison report")
+print("Create comparison report")
 print(" ")
 am.diff_mapping(map_obj,new_map_obj)
 print(" ")
-print("    Confirm:")
-print("             New entry consistent")
-print("             Amounts correct")
-print("             Destination addresses correct")
+print("Confirm:")
+print("    New entry consistent")
+print("    Amounts correct")
+print("    Destination addresses correct")
 print(" ")
 
 inpt = input("Confirm diff data correct?")
@@ -36,17 +55,17 @@ if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
-print("Controller 2: Load the P2SH address")
+print("Load the P2SH address")
 
 with open('p2sh.json','r') as file:
     p2sh = json.load(file)
 print(" ")
 
-print("Controller 2: Load the raw transaction")
+print("Load the partially signed transaction")
 with open('ps1_tx.json','r') as file:
     partial_tx = json.load(file)
-
-print("     Connecting to Ocean client")
+print(" ")
+print("Connecting to Ocean client")
 print(" ")
 rpcport = 18884
 rpcuser = 'user1'
@@ -54,33 +73,37 @@ rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
-inpt = input("     Enter fine mass:")
+inpt = input("Enter new asset mass:")
 assetMass = float(inpt)
-print("     Confirm token issuance amount:")
-tgr,hour = am.tgr()
-tokenAmount = assetMass/tgr
-print("        tokens now = "+str(tokenAmount))
+print(" ")
+print("Confirm token issuance amount:")
+token_ratio,hour = am.token_ratio()
+tokenAmount = assetMass/token_ratio
+print("    tokens now = "+str(tokenAmount))
 print(" ")
 decode_tx = ocean.call('decoderawtransaction',partial_tx["hex"])
 txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
-print("        tx tokens = "+str(txTokenAmount))
-
+print("    transaction tokens = "+str(txTokenAmount))
+print(" ")
 inpt = input("Confirm token issuance correct?")
 print(" ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
+
 print(" ")
-print("     Confirm addresses:")
-print("        Issuance address: "+decode_tx["vout"][0]["scriptPubKey"]["addresses"][0])
-print("        Re-issuance address: "+decode_tx["vout"][1]["scriptPubKey"]["addresses"][0])
+print("Confirm addresses:")
+print("    Issuance address: "+decode_tx["vout"][0]["scriptPubKey"]["addresses"][0])
+print("    Re-issuance address: "+decode_tx["vout"][1]["scriptPubKey"]["addresses"][0])
+print(" ")
 inpt = input("Addresses correct?")
 print(" ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
-if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "XLxxxxxxxxxxxxxxxxxxxx":
+#hard-coded address for the block-signing script
+if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "1NfyrgYvmThxW83y4yD9cTPzB8XzY3fQj2":
     print("WARNING: re-issuance address is not the block-signing script")
     inpt = input("Proceed?")
     print(" ")
@@ -89,68 +112,90 @@ if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "XLxxxxxxxxxxxxxxxxxx
         sys.exit()
 print(" ")
 
-print("     Add partial signature to issuance transaction:")
+print("Add partial signature to issuance transaction")
 c2_privkey = open('c2_privkey.dat','r').read()
 #version byte is 239 for ocean regtest mode
 version_byte = 239-128
 #encode private key to be importable to client
 c2_pk_wif = bc.encode_privkey(c2_privkey,'wif_compressed',version_byte)
-
+print(" ")
 full_sig_tx = ocean.call('signrawtransaction',partial_tx["hex"],[{"txid":partial_tx["txid"],"vout":int(partial_tx["vout"]),"scriptPubKey":partial_tx["scriptPubKey"],"redeemScript":p2sh["redeemScript"]}],[c2_pk_wif])
 print(" ")
+if full_sig_tx["complete"]:
+    print("    2-of-3 signature complete and valid")
+else:
+    print("    2-of-3 signature incomplete or invalid")
+    print("Exit")
+    sys.exit()
 
 decode_full = ocean.call('decoderawtransaction',full_sig_tx["hex"])
 
 print(" ")
-print("     Update policy asset output database")
+print("Update policy asset output list")
 #the UTXO database lists unspent policy asset outputs that can be used for issuance                                              
-#each line lists the txid, the vout, the value of the output and scriptPubKey                                                    
-with open("policyTxOut.dat",'r') as file:
+#each line lists the txid, the vout, the value of the output and scriptPubKey
+
+#get the current list from S3
+s3.Bucket('cb-mapping').download_file('ptxo.dat','ptxo.dat')
+
+with open("ptxo.dat",'r') as file:
     utxolist = file.readlines()
 utxolist = [x.strip() for x in utxolist]
 
-with open("policyTxOut.dat",'w') as file:
+with open("ptxo.dat",'w') as file:
     for sline in utxolist:
         line = sline.split()
         if line[0] == partial_tx["txid"] and int(line[1]) == int(partial_tx["vout"]):
             continue
         else:
-            file.write(line[0]+" "+str(line[1])+" "+str(line[2])+" "+str(line[3])+"\n")
-    file.write(decode_full["txid"]+" "+"2"+" "+str(decode_full["vout"][2]["value"])+" "+partial_tx["scriptPubKey"]+"\n")
+            file.write(line[0]+" "+str(line[1])+" "+str(line[2])+"\n")
+    file.write(decode_full["txid"]+" "+"2"+" "+str(decode_full["vout"][2]["value"])+"\n")
 
+#upload new list to S3
+s3.Object('cb-mapping','ptxo.dat').put(Body=open('ptxo.dat','rb'))
 
-
-
-
-
-
+print(" ")
 inpt = input("Confirm transaction send?")
 print(" ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
-print("     Online device: Submit transaction to Ocean network")
+print("Submit transaction to Ocean network")
 submit_tx = ocean.call('sendrawtransaction',full_sig_tx["hex"])
 print("        txid: "+str(submit_tx))
-
-inpt = input("Confirm transaction mined and sign object?")
 print(" ")
-if str(inpt) != "Yes":
-    print("Exit")
-    sys.exit()
+print("Pause for on-chain confirmation")
+#pause for 2 minutes
+time.sleep(120)
 
-print("     Add signature to mapping object:")
+print(" ")
+print("Confirm asset created on-chain")
+#call the token info rpc
+utxorep = ocean.call('getutxoassetinfo')
+asset_conf = False
+for entry in utxorep:
+    if entry["asset"] == partial_sig_tx["asset"]:
+        if entry["amountspendable"] == txTokenAmount:
+            asset_conf = True
+if not asset_conf:
+    print("ERROR: Issuance transaction not confirmed")
+    sys.exit()
+print(" ")
+
+print("Add signature to mapping object:")
 new_map_obj.sign_db(c2_privkey,2)
 print(" ")
-print("     Export fully signed data objects")
-new_map_obj.export_json("fs12_map.json")
-with open("fs12_tx.json",'w') as file:
-          json.dump(full_sig_tx,file)
-
+print("Check signatures")
+if new_map_obj.verify_multisig(key_list):
+    print("    Signatures verified")
+else:
+    print("    Signature verification failed")
+    print("    ERROR: exit")
+    sys.exit()
 print(" ")
-print("     Update policy asset output database")
-#the UTXO database lists unspent policy asset outputs that can be used for issuance
-#each line lists the txid, the vout, the value of the output and scriptPubKey
 
-
+print("Export fully signed data objects")
+new_map_obj.export_json("map.json")
+#upload new map to S3
+s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'))
