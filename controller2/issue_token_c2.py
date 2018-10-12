@@ -195,7 +195,7 @@ else:
     sys.exit()
 print(" ")
 
-print("Export fully signed data objects")
+print("Export fully signed mapping object")
 new_map_obj.export_json("map.json")
 #upload new map to S3
 s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'))

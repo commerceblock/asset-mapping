@@ -5,10 +5,14 @@ import bitcoin as bc
 from datetime import datetime
 import amap.rpchost as rpc
 import json
+import boto3
+import sys
 
 print("Token Report")
 
-print("Load the mapping object")
+print("Load the mapping object - connecting to S3")
+s3 = boto3.resource('s3')
+s3.Bucket('cb-mapping').download_file('map.json','map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')

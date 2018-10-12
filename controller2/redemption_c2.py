@@ -1,33 +1,61 @@
 #!/usr/bin/env python
 
 import amap.mapping as am
-import bitcoin as bc
+import pybitcointools as bc
 from datetime import datetime
 import amap.rpchost as rpc
+import time
+import boto3
+import sys
 import json
 
-print("Issue an asset: 2-of-3 controller multisig")
+print("Redemption of tokens for a specified asset")
 
 print(" ")
-print("Controller 1")
+print("Controller 2: Confirmer")
 print(" ")
 
-print("Controller 1: Load the mapping object")
+print("Load the current mapping object - connecting to S3")
+s3 = boto3.resource('s3')
+s3.Bucket('cb-mapping').download_file('map.json','map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str(fmass))
+print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c'))
+con_keys = am.ConPubKey()
+con_keys.load_json('controllers.json')
+key_list = con_keys.list_keys()
+if map_obj.verify_multisig(key_list):
+    print("    Signatures verified")
+else:
+    print("    Verification failed")
 print(" ")
 
-print("Controller 1: Load the P2SH address file")
-
-with open('p2sh.json','r') as file:
-    p2sh = json.load(file)
-
+print("Load the updated mapping object from file")
+new_map_obj = am.MapDB(2,3)
+new_map_obj.load_json('ps1_map.json')
+nmass = map_obj.get_total_mass()
+print("    Mass difference: "+str(nmass-fmass))
+print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c'))
+print(" ")
+print("Create comparison report")
+print(" ")
+am.diff_mapping(map_obj,new_map_obj)
+print(" ")
+print("Confirm:")
+print("    Changed entries consistent with redemption")
+print("    Amounts correct")
 print(" ")
 
-print("     Connecting to Ocean client")
+inpt = input("Confirm diff data correct?")
+print(" ")
+if str(inpt) != "Yes":
+    print("Exit")
+    sys.exit()
+
+print("Connecting to Ocean client")
 print(" ")
 rpcport = 18884
 rpcuser = 'user1'
@@ -35,73 +63,79 @@ rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
-print("     Specify issuance address and reissuance token address")
-issueToAddress = '2dmWk6wWzAgrQKzu3DEY8j1vAQZ1rWT8uR7'
-reissuanceToken = '2dk838vWtG63KZvunhpV8z7MMXTvwvU8x4a'
-print("        Issuance address: "+issueToAddress)
-print("        Reissuance token: "+reissuanceToken)
-
-print("     Specify asset reference data: ")
-
-assetRef = '896753'
-assetYear = '2016'
-assetMan = 'Acme'
-assetMass = 403.7814
-
-print("        Ref: "+assetRef)
-print("        Year: "+assetYear)
-print("        Man: "+assetMan)
-print("        Mass: "+str(assetMass))
+print("Redemption Info:")
+rdate = datetime(2018, 9, 7, 0, 2)
+print("    Redemption date: "+str(rdate))
+print("    Token ratio: "+str(am.token_ratio(rdate)))
+print("    Required tokens: "+str(rmass/am.token_ratio(rdate)))
 print(" ")
-
-print("     Determine token issuance on "+str(datetime.now()))
-tgr,hour = am.tgr()
-tokenAmount = assetMass/tgr
-print("        hour = "+str(hour))
-print("        tokens = "+str(tokenAmount))
+print("Burnt tokens and amounts")
 print(" ")
+print("    aca8a14cf814d3c7fa5718df157a2229188eef435e45360558ce5a42893979e3: 0.321983253")
+print("    6948440932e9544033f985fcca54615babfdfc8e4cac50e76dba468031131c36: 0.678312377")
 
-print("     Create raw issuance transaction:")
-fee = 0.0001
-print("        Retrieve policy asset UTXO from the database:")
-#the UTXO database lists unspent policy asset outputs that can be used for issuance
-#each line lists the txid, the vout, the value of the output and scriptPubKey
-with open("policyTxOut.dat") as file:
-    utxolist = file.readlines()
-utxolist = [x.strip() for x in utxolist]
-txin = utxolist[0].split()
-print("            TxID: "+txin[0]+" vout: "+txin[1])
-print("            Ammount: "+txin[2])
-print(" ")
+#add the burnt tokens and amounts to the burnt token list
+tokenid = "aca8a14cf814d3c7fa5718df157a2229188eef435e45360558ce5a42893979e3"
+btoken1 = []
+btoken1.append(tokenid)
+btoken1.append(0.321983253)
+btoken1.append(new_map_obj.get_mass_tokenid(tokenid))
 
-issuancetx = ocean.call('createrawissuance',issueToAddress,tokenAmount,reissuanceToken,'1',p2sh["address"],str(float(txin[2])-fee),1,str(fee),txin[0],str(int(txin[1])))
-print("        Token ID: "+issuancetx["asset"])
-print(" ")
+tokenid = "6948440932e9544033f985fcca54615babfdfc8e4cac50e76dba468031131c36"
+btoken2 = []
+btoken2.append(tokenid)
+btoken2.append(0.678312377)
+btoken2.append(new_map_obj.get_mass_tokenid(tokenid))
 
-print("     Add entry to object:")
-map_obj.add_asset(assetRef,assetYear,assetMass,issuancetx["asset"],assetMan)
-map_obj.update_time()
-tmass = map_obj.get_total_mass()
-print("            New total mass: "+str(tmass))
+burnt_tokens = []
+burnt_tokens.append(btoken1)
+burnt_tokens.append(btoken2)
 
 print(" ")
+print("Perform token report and confirm burn against new map")
+#perform a token report to determine that the tokens have been successfully burnt
+utxorep = ocean.call('getutxoassetinfo')
+print("Retrieving UTXO report ...")
+map_dict = new_map_obj.get_json()
 
-print("     Add partial signature to issuance transaction:")
-c1_privkey = open('c1_privkey.dat','r').read()
-#version byte is 239 for ocean regtest mode
-version_byte = 239-128
-#encode private key to be importable to ocean client
-c1_pk_wif = bc.encode_privkey(c1_privkey,'wif_compressed',version_byte)
+for btoken in burnt_tokens:
+	for entry in utxorep:
+    	asset = entry["asset"]
+    	if asset == btoken[0]:
+    		amount = entry["amountspendable"] + entry["amountfrozen"]
+    		print("    TokenID: "+asset)
+    		print("        Map mass = "+str(btoken[2]))
+    		print("        Chain mass = "+str(amount/am.token_ratio(rdate)))
+    		diffr = btoken[2]-amount/am.token_ratio(rdate)
+    		print("        Difference = "+str(diffr))
+    		if diffr < 0.0:
+    			print("ERROR: Excess tokens on chain - check burn")
+    			print("Exit")
+    			sys.exit()
 
-partial_sig_tx = ocean.call('signrawtransaction',issuancetx["rawtx"],[{"txid":txin[0],"vout":int(txin[1]),"scriptPubKey":txin[3],"redeemScript":p2sh["redeemScript"]}],[c1_pk_wif])
-print("     Add signature to mapping object:")
-map_obj.sign_db(c1_privkey,1)
+inpt = input("Confirm report data correct?")
 print(" ")
-print("     Export partially signed data objects")
-map_obj.export_json("ps1_map.json")
-#add the input transaction data to the tx file to enable the second signature to be generated
-partial_sig_tx["scriptPubKey"] = txin[3]
-partial_sig_tx["txid"] = txin[0]
-partial_sig_tx["vout"] = txin[1]
-with open("ps1_tx.json",'w') as file:
-          json.dump(partial_sig_tx,file)
+if str(inpt) != "Yes":
+    print("Exit")
+    sys.exit()
+
+print(" ")
+c1_privkey = open('c2_privkey.dat','r').read()
+print("Add signature to mapping object:")
+new_map_obj.sign_db(c1_privkey,1)
+print(" ")
+print("Check signatures")
+if new_map_obj.verify_multisig(key_list):
+    print("    Signatures verified")
+else:
+    print("    Signature verification failed")
+    print("    ERROR: exit")
+    sys.exit()
+print(" ")
+
+print("Export fully signed mapping object")
+print(" ")
+print("     map.json")
+map_obj.export_json("map.json")
+#upload new map to S3
+s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'))
