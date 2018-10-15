@@ -31,13 +31,13 @@ def controller_recover_key(recovery_phrase):
     cpubkey = bc.compress(pubkey)
     return privkey, cpubkey
 
-def tgr(rdate = datetime.now()):
-#function to return the TGR at the supplied datetime. 
-#Without argument it returns the current TGR (based on the system clock)
+def token_ratio(rdate = datetime.now()):
+#function to return the token ratio at the supplied datetime. 
+#Without argument it returns the current token ratio (based on the system clock)
 #
 #The rate is the inflation rate (not the demmurage rate) 
     rate = 0.0101010101010101
-#The zero ratio is the TGR at time zero
+#The zero ratio is the token ratio at time zero
     zeroratio = 400.0
 #dayzero is the precise time of launch (i.e. inflation calculated from this time)
 #(year, month, day, hour, minutes)
@@ -45,8 +45,8 @@ def tgr(rdate = datetime.now()):
     days = (rdate-dayzero).days
     hours = (rdate-dayzero).seconds // 3600
     hours_elapsed = days*24 + hours
-    tgrf = zeroratio/((1.0 + rate)**(hours_elapsed/(365.0*24.0)))
-    return tgrf,hours_elapsed
+    tr = zeroratio/((1.0 + rate)**(hours_elapsed/(365.0*24.0)))
+    return tr,hours_elapsed
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
@@ -205,7 +205,7 @@ class MapDB(object):
 
         the return value is an array of the remapped tokens
         """
-#confirm redemption token values matches asset mass against tgr
+#confirm redemption token values matches asset mass against token ratio
         dasset_mass = []
         total_mass = 0.0
         dtokens = []
@@ -219,14 +219,14 @@ class MapDB(object):
         for it in range(len(burnt_tokens)):
             total_tokens += burnt_tokens[it][1]
         
-        if total_tokens < round(total_mass*tgr(redemption_date)/400.0,9):
+        if total_tokens < round(total_mass*token_ratio(redemption_date)/400.0,9):
             print("Total tokens: "+str(total_tokens))
-            print("Total converted mass: "+str(round(total_mass*tgr(redemption_date)/400.0),9))
+            print("Total converted mass: "+str(round(total_mass*token_ratio(redemption_date)/400.0),9))
             print("Error: insufficient tokens for asset redemption ")
             return False
 
         redemption_tolerance = 0.000001
-        if total_tokens > total_mass*tgr(redemption_date) + redemption_tolerance:
+        if total_tokens > total_mass*token_ratio(redemption_date) + redemption_tolerance:
             print("Error: excess tokens for redemption")
             return False
 
@@ -237,11 +237,11 @@ class MapDB(object):
             for i,j in self.map["assets"].items():
                 if j["tokenid"] == burnt_tokens[it][0]:
                     btasset_list.append(j["ref"])
-                    if j["mass"] > burnt_tokens[it][1]*tgr(redemption_date):
-                        j["mass"] -= burnt_tokens[it][1]*tgr(redemption_date)
-                        btasset_mass.append(burnt_tokens[it][1]*tgr(redemption_date))
+                    if j["mass"] > burnt_tokens[it][1]*token_ratio(redemption_date):
+                        j["mass"] -= burnt_tokens[it][1]*token_ratio(redemption_date)
+                        btasset_mass.append(burnt_tokens[it][1]*token_ratio(redemption_date))
                     else:
-                        burnt_tokens[it][1] -= j["mass"]/tgr(redemption_date)
+                        burnt_tokens[it][1] -= j["mass"]/token_ratio(redemption_date)
                         btasset_mass.append(j["mass"])
                         j["mass"] = 0.0
 
