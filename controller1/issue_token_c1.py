@@ -22,7 +22,7 @@ map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str(fmass))
-print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c'))
+print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
 con_keys = am.ConPubKey()
 con_keys.load_json('controllers.json')
 key_list = con_keys.list_keys()
@@ -51,7 +51,7 @@ inpt = input("Enter issuance address:")
 issueToAddress = str(inpt)
 print(" ")
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "1NfyrgYvmThxW83y4yD9cTPzB8XzY3fQj2"
+reissuanceToken = "2dqWgtrDbwREd2f2M62PiUqj3BfZLMZnGx7"
 print(" ")
 print("    Issuance address: "+issueToAddress)
 print("    Reissuance address: "+reissuanceToken)
@@ -83,7 +83,8 @@ print(" ")
 token_ratio,hour = am.token_ratio()
 tokenAmount = assetMass/token_ratio
 print("    hour = "+str(hour))
-print("    tokens = "+str(tokenAmount))
+print("    token ratio = "+str("%.8f" % token_ratio))
+print("    tokens = "+str("%.8f" % tokenAmount))
 print(" ")
 
 print("Create raw issuance transaction:")

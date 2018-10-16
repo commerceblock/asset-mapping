@@ -36,10 +36,13 @@ print(" ")
 token_ratio,hour = am.token_ratio()
 print("Token ratio = "+str("%.6f" % token_ratio)+" at hour "+str(hour))
 print(" ")
-print("          Token ID                                                Mass      Expected-Tokens    Chain-Tokens")
-print("-----------------------------------------------------------------------------------------------------------")
+print("Matched tokens:")
+print(" ")
+print("          Token ID                                                  Mass      Expected-Tokens    Chain-Tokens")
+print("-------------------------------------------------------------------------------------------------------------")
 
 map_dict = map_obj.get_json()
+extokens = []
 
 for entry in utxorep:
     asset = entry["asset"]
@@ -52,4 +55,18 @@ for entry in utxorep:
             inmap = True
     if inmap:
         exptoken = mass/token_ratio
-        print(asset+"   "+str("%.3f" % mass)+"   "+str("%.6f" % exptoken)+"   "+str("%.6f" % amount))
+        print(asset+"   "+str("%.3f" % mass)+"       "+str("%.6f" % exptoken)+"          "+str("%.6f" % amount))
+    elif amount < 999.0:
+        excluded = []
+        excluded.append(asset)
+        excluded.append(amount)
+        extokens.append(excluded)
+
+if len(extokens) > 0:
+    print(" ")
+    print("WARNING: Chain tokens not mapped:")
+    print(" ")
+    print("          Token ID                                                Amount")
+    print("------------------------------------------------------------------------")
+    for excluded in extokens:
+        print(excluded[0]+"   "+str("%.6f" % excluded[1]))

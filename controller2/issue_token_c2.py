@@ -22,7 +22,7 @@ map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str(fmass))
-print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c'))
+print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
 con_keys = am.ConPubKey()
 con_keys.load_json('controllers.json')
 key_list = con_keys.list_keys()
@@ -35,9 +35,9 @@ print(" ")
 print("Load the updated mapping object from file")
 new_map_obj = am.MapDB(2,3)
 new_map_obj.load_json('ps1_map.json')
-nmass = map_obj.get_total_mass()
+nmass = new_map_obj.get_total_mass()
 print("    Mass difference: "+str(nmass-fmass))
-print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c'))
+print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
 print(" ")
 print("Create comparison report")
 print(" ")
@@ -77,10 +77,10 @@ inpt = input("Enter new asset mass:")
 assetMass = float(inpt)
 print(" ")
 print("Confirm token issuance amount:")
+print(" ")
 token_ratio,hour = am.token_ratio()
 tokenAmount = assetMass/token_ratio
-print("    tokens now = "+str(tokenAmount))
-print(" ")
+print("    tokens now = "+str("%.8f" % tokenAmount))
 decode_tx = ocean.call('decoderawtransaction',partial_tx["hex"])
 txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
 print("    transaction tokens = "+str(txTokenAmount))
@@ -103,7 +103,7 @@ if str(inpt) != "Yes":
     sys.exit()
 
 #hard-coded address for the block-signing script
-if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "1NfyrgYvmThxW83y4yD9cTPzB8XzY3fQj2":
+if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "2dqWgtrDbwREd2f2M62PiUqj3BfZLMZnGx7":
     print("WARNING: re-issuance address is not the block-signing script")
     inpt = input("Proceed?")
     print(" ")
@@ -175,7 +175,7 @@ print("Confirm asset created on-chain")
 utxorep = ocean.call('getutxoassetinfo')
 asset_conf = False
 for entry in utxorep:
-    if entry["asset"] == partial_sig_tx["asset"]:
+    if entry["asset"] == decode_tx["vin"][0]["issuance"]["asset"]:
         if entry["amountspendable"] == txTokenAmount:
             asset_conf = True
 if not asset_conf:
