@@ -5,6 +5,7 @@ import bitcoin as bc
 from mnemonic.mnemonic import Mnemonic
 import binascii
 import json
+import calendar
 from datetime import datetime
 from datadiff import diff
 
@@ -18,7 +19,8 @@ def controller_keygen():
     seed = Mnemonic.to_seed(recovery_phrase)
     privkey = bc.sha256(seed)
     pubkey = bc.privkey_to_pubkey(privkey)
-    return privkey, pubkey, recovery_phrase
+    cpubkey = bc.compress(pubkey)
+    return privkey, cpubkey, recovery_phrase
 
 def controller_recover_key(recovery_phrase):
 #function to recover a public and private key pair from a mnemonic phrase
@@ -26,17 +28,25 @@ def controller_recover_key(recovery_phrase):
     seed = Mnemonic.to_seed(recovery_phrase)
     privkey = bc.sha256(seed)
     pubkey = bc.privkey_to_pubkey(privkey)
-    return privkey, pubkey
+    cpubkey = bc.compress(pubkey)
+    return privkey, cpubkey
 
 def tgr(rdate = datetime.now()):
-#function to return the TGR at the supplied date. 
-#Without argument it returns the current TGR. 
-    rate = 0.01
+#function to return the TGR at the supplied datetime. 
+#Without argument it returns the current TGR (based on the system clock)
+#
+#The rate is the inflation rate (not the demmurage rate) 
+    rate = 0.0101010101010101
+#The zero ratio is the TGR at time zero
+    zeroratio = 400.0
+#dayzero is the precise time of launch (i.e. inflation calculated from this time)
+#(year, month, day, hour, minutes)
     dayzero = datetime(2018, 8, 30, 0, 1)
     days = (rdate-dayzero).days
-    tgrf = (1.0 + rate)**(days/365.0)
-    return tgrf
-
+    hours = (rdate-dayzero).seconds // 3600
+    hours_elapsed = days*24 + hours
+    tgrf = zeroratio/((1.0 + rate)**(hours_elapsed/(365.0*24.0)))
+    return tgrf,hours_elapsed
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
@@ -47,8 +57,6 @@ class ConPubKey(object):
         self.jsondata["m"] = m_multisig
         self.jsondata["pubkeys"] = {}
         for it in range(len(pubkeylist)):
-            print(it)
-            print(pubkeylist[it])
             self.jsondata["pubkeys"][it+1] = pubkeylist[it]
 
     def load_json(self,filename):
@@ -229,11 +237,11 @@ class MapDB(object):
             for i,j in self.map["assets"].items():
                 if j["tokenid"] == burnt_tokens[it][0]:
                     btasset_list.append(j["ref"])
-                    if j["mass"] > burnt_tokens[it][1]*400.0/tgr(redemption_date):
-                        j["mass"] -= burnt_tokens[it][1]*400.0/tgr(redemption_date)
-                        btasset_mass.append(burnt_tokens[it][1]*400.0/tgr(redemption_date))
+                    if j["mass"] > burnt_tokens[it][1]*tgr(redemption_date):
+                        j["mass"] -= burnt_tokens[it][1]*tgr(redemption_date)
+                        btasset_mass.append(burnt_tokens[it][1]*tgr(redemption_date))
                     else:
-                        burnt_tokens[it][1] -= j["mass"]*tgr(redemption_date)/400.0
+                        burnt_tokens[it][1] -= j["mass"]/tgr(redemption_date)
                         btasset_mass.append(j["mass"])
                         j["mass"] = 0.0
 

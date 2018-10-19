@@ -35,7 +35,7 @@ class AMapping(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-        self.oldMapping = QGroupBox("Initial Mapping")
+        self.oldMapping = QGroupBox("Current Mapping")
         self.oldMapView = QTreeView()
         self.oldMapView.setRootIsDecorated(False)
         self.oldMapView.setAlternatingRowColors(True)
@@ -72,17 +72,17 @@ class AMapping(QWidget):
         self.findButton.show()
         self.tokenButton = QPushButton("&Token Report")
         self.tokenButton.show()
-        self.remapButton = QPushButton("&Re-map")
+        self.remapButton = QPushButton("&Redemption")
         self.remapButton.show()
 
-        self.oldMassButton = QPushButton("&Mass Check")
+        self.tokenReport = QPushButton("&Token Report")
         self.oldMassButton.show()
         self.loadOldButton = QPushButton("&Load File")
         self.loadOldButton.show()
         self.downloadButton = QPushButton("&Download")
         self.downloadButton.show()
         
-        self.newMassButton = QPushButton("&Mass Check")
+        self.sign = QPushButton("&Sign")
         self.newMassButton.show()
         self.loadNewButton = QPushButton("&Load File")
         self.loadNewButton.show()
@@ -109,9 +109,11 @@ class AMapping(QWidget):
 #        self.dialog = NewMassDialog()
 
         self.oldMapMass = QLabel("Mass:")
+        self.oldMapNum = QLabel("Assets:")
         self.oldMapTime = QLabel("Time:")
         self.oldMapSigs = QLabel("Signatures:")
         self.newMapMass = QLabel("Mass:")
+        self.newMapNum = QLabel("Assets:")
         self.newMapTime = QLabel("Time:")
         self.newMapSigs = QLabel("Signatures:")
 

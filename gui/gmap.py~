@@ -35,7 +35,7 @@ class AMapping(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-        self.oldMapping = QGroupBox("Initial Mapping")
+        self.oldMapping = QGroupBox("Current Mapping")
         self.oldMapView = QTreeView()
         self.oldMapView.setRootIsDecorated(False)
         self.oldMapView.setAlternatingRowColors(True)
@@ -72,7 +72,7 @@ class AMapping(QWidget):
         self.findButton.show()
         self.tokenButton = QPushButton("&Token Report")
         self.tokenButton.show()
-        self.remapButton = QPushButton("&Re-map")
+        self.remapButton = QPushButton("&Redemeption")
         self.remapButton.show()
 
         self.oldMassButton = QPushButton("&Mass Check")
@@ -261,6 +261,7 @@ class AMapping(QWidget):
 
         tot_mass = self.new_map.get_total_mass()
         self.newMapMass.setText("Mass: "+str(tot_mass))
+        timestamp = self.new_map
 
     def loadOldMap(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "Load Old Map",
