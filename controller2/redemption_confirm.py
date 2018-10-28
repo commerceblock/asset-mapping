@@ -169,4 +169,4 @@ print("     map.json")
 new_map_obj.export_json("map.json")
 print("Upload to server")
 #upload new map to S3
-s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'))
+s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')

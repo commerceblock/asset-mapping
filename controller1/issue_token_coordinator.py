@@ -47,11 +47,11 @@ rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
-inpt = input("Enter issuance address:")
+inpt = input("Enter issuance address: ")
 issueToAddress = str(inpt)
 print(" ")
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "2dqWgtrDbwREd2f2M62PiUqj3BfZLMZnGx7"
+reissuanceToken = "1KMAXfyaZj28o81w8zHSqKNbeS5Pvg7Pjm"
 print(" ")
 print("    Issuance address: "+issueToAddress)
 print("    Reissuance address: "+reissuanceToken)
@@ -120,7 +120,7 @@ print(" ")
 print("Add partial signature to issuance transaction")
 c1_privkey = open('c1_privkey.dat','r').read()
 #version byte is 239 for ocean regtest mode
-version_byte = 239-128
+version_byte = 0
 #encode private key to be importable to ocean client
 c1_pk_wif = bc.encode_privkey(c1_privkey,'wif_compressed',version_byte)
 
@@ -143,3 +143,7 @@ partial_sig_tx["vout"] = txin[1]
 partial_sig_tx["asset"] = issuancetx["asset"]
 with open("ps1_tx.json",'w') as file:
           json.dump(partial_sig_tx,file)
+
+#upload new partially signed objects 
+s3.Object('cb-mapping','ps1_tx.json').put(Body=open('ps1_tx.json','rb'))
+s3.Object('cb-mapping','ps1_map.json').put(Body=open('ps1_map.json','rb'))

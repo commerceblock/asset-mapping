@@ -6,14 +6,16 @@ from mnemonic.mnemonic import Mnemonic
 import binascii
 import json
 import calendar
+import codecs
 from datetime import datetime
 from datadiff import diff
 
 def controller_keygen():
 #function to generate a random mnemonic recovery phrase
-#and in turn a private a public keys 
+#and in turn a private a public keys
+    decode_hex = codecs.getdecoder("hex_codec")
     entropy_hex = bc.random_key()
-    entropy_bytes = entropy_hex.decode("hex")
+    entropy_bytes = decode_hex(entropy_hex)[0]
     mnemonic_base = Mnemonic(language='english')
     recovery_phrase = mnemonic_base.to_mnemonic(entropy_bytes)
     seed = Mnemonic.to_seed(recovery_phrase)
@@ -41,7 +43,7 @@ def token_ratio(rdate = datetime.now()):
     zeroratio = 400.0
 #dayzero is the precise time of launch (i.e. inflation calculated from this time)
 #(year, month, day, hour, minutes)
-    dayzero = datetime(2018, 8, 30, 0, 1)
+    dayzero = datetime(2018, 10, 25, 13, 1)
     days = (rdate-dayzero).days
     hours = (rdate-dayzero).seconds // 3600
     hours_elapsed = days*24 + hours
@@ -178,6 +180,11 @@ class MapDB(object):
         strhash = bc.sha256(jsonstring)
         sig = bc.ecdsa_sign(strhash,privkey)
         self.map["sigs"][index] = sig
+
+    def clear_sigs(self):
+        self.map["sigs"].pop("1", None)
+        self.map["sigs"].pop("2", None)
+        self.map["sigs"].pop("3", None)
 
     def export_json(self,filename):
 #function to save json object to file

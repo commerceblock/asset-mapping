@@ -34,7 +34,7 @@ print(" ")
 print("Generate report")
 print(" ")
 token_ratio,hour = am.token_ratio()
-print("Token ratio = "+str("%.6f" % token_ratio)+" at hour "+str(hour))
+print("Token ratio = "+str("%.8f" % token_ratio)+" at hour "+str(hour))
 print(" ")
 print("Matched tokens:")
 print(" ")
@@ -55,7 +55,7 @@ for entry in utxorep:
             inmap = True
     if inmap and amount < 999.0:
         exptoken = mass/token_ratio
-        print(asset+"   "+str("%.3f" % mass)+"       "+str("%.6f" % exptoken)+"          "+str("%.6f" % amount))
+        print(asset+"   "+str("%.3f" % mass)+"     "+str("%.8f" % exptoken)+"         "+str("%.8f" % amount))
     elif amount < 999.0:
         excluded = []
         excluded.append(asset)

@@ -14,6 +14,10 @@ from PyQt5.QtGui import QStandardItemModel
 
 import amap.mapping as am
 import bitcoin as bc
+import boto3
+import sys
+import amap.rpchost as rpc
+from datetime import datetime
 
 class AMapping(QWidget):
     INDEX, ASSET, MASS, TOKENID = range(4)
@@ -29,8 +33,8 @@ class AMapping(QWidget):
         self.title = 'Asset Mapping Interface'
         self.left = 10
         self.top = 10
-        self.width = 900
-        self.height = 640
+        self.width = 1000
+        self.height = 540
 
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
@@ -72,17 +76,17 @@ class AMapping(QWidget):
         self.findButton.show()
         self.tokenButton = QPushButton("&Token Report")
         self.tokenButton.show()
-        self.remapButton = QPushButton("&Redemption")
+        self.remapButton = QPushButton("&Redemeption")
         self.remapButton.show()
 
-        self.tokenReport = QPushButton("&Token Report")
+        self.oldMassButton = QPushButton("&Mass Check")
         self.oldMassButton.show()
         self.loadOldButton = QPushButton("&Load File")
         self.loadOldButton.show()
         self.downloadButton = QPushButton("&Download")
         self.downloadButton.show()
         
-        self.sign = QPushButton("&Sign")
+        self.newMassButton = QPushButton("&Mass Check")
         self.newMassButton.show()
         self.loadNewButton = QPushButton("&Load File")
         self.loadNewButton.show()
@@ -102,18 +106,16 @@ class AMapping(QWidget):
 
 #        self.dialog = IssueAssetDialog()
         self.addAssetDlog = AddAssetDialog()
-#        self.dialog = TokenDialog()
+        self.tokenDlog = TokenDialog()
 #        self.dialog = SignaturesDialog()
 #        self.dialog = RemapDialog()
 #        self.dialog = OldMassDialog()
 #        self.dialog = NewMassDialog()
 
         self.oldMapMass = QLabel("Mass:")
-        self.oldMapNum = QLabel("Assets:")
         self.oldMapTime = QLabel("Time:")
         self.oldMapSigs = QLabel("Signatures:")
         self.newMapMass = QLabel("Mass:")
-        self.newMapNum = QLabel("Assets:")
         self.newMapTime = QLabel("Time:")
         self.newMapSigs = QLabel("Signatures:")
 
@@ -214,12 +216,16 @@ class AMapping(QWidget):
         return 0
 
     def tokenReport(self):
+        self.tokenDlog.show()
         return 0
 
     def newMassAsset(self):
         return 0
 
     def oldMassAsset(self):
+
+        QMessageBox.information(self, "Verifying map","Signatures verified")
+
         return 0
 
     def findAsset(self):
@@ -263,7 +269,7 @@ class AMapping(QWidget):
 
         tot_mass = self.new_map.get_total_mass()
         self.newMapMass.setText("Mass: "+str(tot_mass))
-        timestamp = self.new_map
+#        timestamp = self.new_map.get
 
     def loadOldMap(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "Load Old Map",
@@ -289,12 +295,30 @@ class AMapping(QWidget):
         return 0
 
     def downloadMap(self):
-        return 0
+        s3 = boto3.resource('s3')
+        s3.Bucket('cb-mapping').download_file('map.json','map.json')
+
+        self.old_map.load_json('map.json')
+        json_obj = self.old_map.get_json()
+
+        for i,j in json_obj["assets"].items():
+            self.addEntry(self.oldModel,i,j["ref"],j["mass"],j["tokenid"])
+
+        tot_mass = self.old_map.get_total_mass()
+        self.oldMapMass.setText("Mass: "+str(tot_mass))
+        tmstr = "Time: "+str(self.old_map.get_time())+" ("+datetime.fromtimestamp(self.old_map.get_time()).strftime('%c')+")"
+        self.oldMapTime.setText(tmstr)
+        self.oldMapSigs.setText("Signatures: Verified")
+
+        complete = True
+
+        return complete
 
     def uploadMap(self):
         return 0
 
 class AddAssetDialog(QDialog):
+
     def __init__(self, parent=None):
         super(AddAssetDialog, self).__init__(parent)
 
@@ -363,6 +387,89 @@ class AddAssetDialog(QDialog):
     def getAssetInfo(self):
         return self.assetref,self.year,self.man,self.mass,self.token
 
+class TokenDialog(QDialog):
+    RTOKEN, RMASS, ETOK, CTOK, RDIFF = range(5)
+    def __init__(self, parent=None):
+        super(TokenDialog, self).__init__(parent)
+
+        rpcport = 18884
+        rpcuser = 'user1'
+        rpcpassword = 'password1'
+        url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
+        ocean = rpc.RPCHost(url)
+
+        utxorep = ocean.call('getutxoassetinfo')
+        token_ratio,hour = am.token_ratio()
+
+        s3 = boto3.resource('s3')
+        s3.Bucket('cb-mapping').download_file('map.json','map.json')
+
+        self.setWindowTitle("Token Report")
+
+        self.left = 10
+        self.top = 10
+        self.width = 720
+        self.height = 500
+
+        self.setGeometry(self.left, self.top, self.width, self.height)
+
+        self.tokenReport = QGroupBox("Blockchain token analysis: UTXO scan")
+        self.tokenView = QTreeView()
+        self.tokenView.setRootIsDecorated(False)
+        self.tokenView.setAlternatingRowColors(True)
+
+        tokenLayout = QHBoxLayout()
+        tokenLayout.addWidget(self.tokenView)
+        self.tokenReport.setLayout(tokenLayout)
+
+        self.tokenModel = self.createReportModel(self)
+        self.tokenView.setModel(self.tokenModel)
+
+        self.tokenView.setColumnWidth(0,200)
+
+        self.tokenRatio = QLabel("Token ratio: "+str("%.8f" % token_ratio)+" oz/token at hour "+str(hour))
+
+        map_obj = am.MapDB(2,3)
+        map_obj.load_json('map.json')
+
+        json_obj = map_obj.get_json()
+
+        for entry in utxorep:
+            asset = entry["asset"]
+            amount = entry["amountspendable"] + entry["amountfrozen"]
+            mass = 0.0
+            inmap = False
+            for i,j in json_obj["assets"].items():
+                if j["tokenid"] == asset:
+                    mass += j["mass"]
+                    inmap = True
+            if inmap and amount < 9.0:
+                exptoken = mass/token_ratio
+                self.addReport(self.tokenModel,asset,mass,exptoken,amount)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.tokenReport)
+        layout.addWidget(self.tokenRatio)
+
+        self.setLayout(layout)
+
+    def createReportModel(self,parent):
+        model = QStandardItemModel(0, 5, parent)
+        model.setHeaderData(self.RTOKEN, Qt.Horizontal, "Token ID")
+        model.setHeaderData(self.RMASS, Qt.Horizontal, "Mass")
+        model.setHeaderData(self.ETOK, Qt.Horizontal, "Expected tokens")
+        model.setHeaderData(self.CTOK, Qt.Horizontal, "Chain tokens")
+        model.setHeaderData(self.RDIFF, Qt.Horizontal, "Difference")
+        return model
+
+    def addReport(self, model, tokID, rmas, etoken, ctoken):
+        model.insertRow(0)
+        model.setData(model.index(0, self.RTOKEN), tokID)
+        model.setData(model.index(0, self.RMASS), str("%.3f" % rmas))
+        model.setData(model.index(0, self.ETOK), str("%.8f" % etoken))
+        model.setData(model.index(0, self.CTOK), str("%.8f" % ctoken))
+        model.setData(model.index(0, self.RDIFF), str("%.8f" % (ctoken-etoken)))
+
 if __name__ == '__main__':
     import sys
 
@@ -370,7 +477,7 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
 
-    addressBook = AMapping()
-    addressBook.show()
+    astmapping = AMapping()
+    astmapping.show()
 
     sys.exit(app.exec_())

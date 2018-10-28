@@ -32,11 +32,17 @@ else:
     print("    Signature verification failed")
 print(" ")
 
-print("Load the updated mapping object from file")
+print("Fetch the partially signed objects")
+s3.Bucket('cb-mapping').download_file('ps1_map.json','ps1_map.json')
+s3.Bucket('cb-mapping').download_file('ps1_tx.json','ps1_tx.json')
+print(" ")
+
+print("Load the updated mapping object")
+print(" ")
 new_map_obj = am.MapDB(2,3)
 new_map_obj.load_json('ps1_map.json')
 nmass = new_map_obj.get_total_mass()
-print("    Mass difference: "+str("%.3f" % (nmass-fmass))
+print("    Mass difference: "+str("%.3f" % (nmass-fmass)))
 print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
 print(" ")
 print("Create comparison report")
@@ -49,7 +55,7 @@ print("    Amounts correct")
 print("    Destination addresses correct")
 print(" ")
 
-inpt = input("Confirm diff data correct?")
+inpt = input("Confirm diff data correct? ")
 print(" ")
 if str(inpt) != "Yes":
     print("Exit")
@@ -73,7 +79,7 @@ rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
-inpt = input("Enter new asset mass:")
+inpt = input("Enter new asset mass: ")
 assetMass = float(inpt)
 print(" ")
 print("Confirm token issuance amount:")
@@ -85,7 +91,7 @@ decode_tx = ocean.call('decoderawtransaction',partial_tx["hex"])
 txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
 print("    transaction tokens = "+str(txTokenAmount))
 print(" ")
-inpt = input("Confirm token issuance correct?")
+inpt = input("Confirm token issuance correct? ")
 print(" ")
 if str(inpt) != "Yes":
     print("Exit")
@@ -96,16 +102,16 @@ print("Confirm addresses:")
 print("    Issuance address: "+decode_tx["vout"][0]["scriptPubKey"]["addresses"][0])
 print("    Re-issuance address: "+decode_tx["vout"][1]["scriptPubKey"]["addresses"][0])
 print(" ")
-inpt = input("Addresses correct?")
+inpt = input("Addresses correct? ")
 print(" ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
 #hard-coded address for the block-signing script
-if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "2dqWgtrDbwREd2f2M62PiUqj3BfZLMZnGx7":
+if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "1KMAXfyaZj28o81w8zHSqKNbeS5Pvg7Pjm":
     print("WARNING: re-issuance address is not the block-signing script")
-    inpt = input("Proceed?")
+    inpt = input("Proceed? ")
     print(" ")
     if str(inpt) != "Yes":
         print("Exit")
@@ -115,12 +121,12 @@ print(" ")
 print("Add partial signature to issuance transaction")
 c2_privkey = open('c2_privkey.dat','r').read()
 #version byte is 239 for ocean regtest mode
-version_byte = 239-128
+version_byte = 0
 #encode private key to be importable to client
 c2_pk_wif = bc.encode_privkey(c2_privkey,'wif_compressed',version_byte)
 print(" ")
 full_sig_tx = ocean.call('signrawtransaction',partial_tx["hex"],[{"txid":partial_tx["txid"],"vout":int(partial_tx["vout"]),"scriptPubKey":partial_tx["scriptPubKey"],"redeemScript":p2sh["redeemScript"]}],[c2_pk_wif])
-print(" ")
+
 if full_sig_tx["complete"]:
     print("    2-of-3 signature complete and valid")
 else:
@@ -155,11 +161,22 @@ with open("ptxo.dat",'w') as file:
 s3.Object('cb-mapping','ptxo.dat').put(Body=open('ptxo.dat','rb'))
 
 print(" ")
-inpt = input("Confirm transaction send?")
+inpt = input("Confirm transaction send? ")
 print(" ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
+
+submitok = False
+while not submitok:
+    #check it is not a reissuance block - if it is wait a minute
+    bbhash = ocean.call('getbestblockhash')
+    bestblock = ocean.call('getblockheader',bbhash)
+    blockheight = int(bestblock["height"])
+    if blockheight%60 == 0:
+        time.sleep(60)
+    else:
+        submitok = True
 
 print("Submit transaction to Ocean network")
 submit_tx = ocean.call('sendrawtransaction',full_sig_tx["hex"])
