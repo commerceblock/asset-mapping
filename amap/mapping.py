@@ -33,22 +33,16 @@ def controller_recover_key(recovery_phrase):
     cpubkey = bc.compress(pubkey)
     return privkey, cpubkey
 
-def token_ratio(rdate = datetime.now()):
-#function to return the token ratio at the supplied datetime. 
-#Without argument it returns the current token ratio (based on the system clock)
-#
-#The rate is the inflation rate (not the demmurage rate) 
+def token_ratio(blockheight):
+#function to return the token ratio at the supplied block height
+#The rate is the inflation rate (not the demmurage rate)
     rate = 0.0101010101010101
 #The zero ratio is the token ratio at time zero
     zeroratio = 400.0
-#dayzero is the precise time of launch (i.e. inflation calculated from this time)
-#(year, month, day, hour, minutes)
-    dayzero = datetime(2018, 10, 25, 13, 1)
-    days = (rdate-dayzero).days
-    hours = (rdate-dayzero).seconds // 3600
-    hours_elapsed = days*24 + hours
-    tr = zeroratio/((1.0 + rate)**(hours_elapsed/(365.0*24.0)))
-    return tr,hours_elapsed
+#calculate the number of hours based on the blockheight
+    hours = blockheight // 60
+    tr = zeroratio/((1.0 + rate)**(hours/(365.0*24.0)))
+    return tr
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
@@ -98,6 +92,7 @@ class MapDB(object):
         self.map["assets"] = {}
         self.map["sigs"] = {}
         self.map["time"] = time.time()
+        self.map["height"] = 0
         
     def add_asset(self,asset_ref,year_ref,mass,tokenid,manufacturer):
 #add a new asset to the object
@@ -121,6 +116,10 @@ class MapDB(object):
     def update_time(self,ntime = time.time()):
 #function to update the time-stamp of the object
         self.map["time"] = ntime
+
+    def update_height(blockheight):
+#function to updatde the block-height
+        self.map["height"] = blockheight
 
     def get_time(self):
 #return the timestamp of the object
@@ -202,7 +201,7 @@ class MapDB(object):
 #retrieve and load json object from the public API
         print("retrieve json from public URL")
 
-    def remap_assets(self,burnt_tokens,asset_reference,redemption_date):
+    def remap_assets(self,burnt_tokens,asset_reference,redemption_height):
         """
         remapping algorithm
 
@@ -213,7 +212,7 @@ class MapDB(object):
         the return value is an array of the remapped tokens
         """
         #confirm redemption token values matches asset mass against token ratio
-        tratio, hour = token_ratio(redemption_date)
+        tratio = token_ratio(redemption_height)
 
         dasset_mass = []
         total_mass = 0.0
