@@ -23,6 +23,7 @@ map_obj.load_json('map.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str("%.3f" % fmass))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
+print("    Blockheight: "+str(map_obj.get_height()))
 con_keys = am.ConPubKey()
 con_keys.load_json('controllers.json')
 key_list = con_keys.list_keys()
@@ -44,6 +45,7 @@ new_map_obj.load_json('ps1_map.json')
 nmass = new_map_obj.get_total_mass()
 print("    Mass difference: "+str("%.3f" % (nmass-fmass)))
 print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
+print("    Blockheight: "+str(new_map_obj.get_height()))
 print(" ")
 print("Create comparison report")
 print(" ")
@@ -78,14 +80,20 @@ rpcuser = 'user1'
 rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
+chaininfo = ocean.call('getblockchaininfo')
+print("    Current blockheight: "+str(chaininfo["blocks"]))
+print("    Block time: "+str(chaininfo["mediantime"])+" ("+datetime.fromtimestamp(chaininfo["mediantime"]).strftime('%c')+")")
+print(" ")
 
 inpt = input("Enter new asset mass: ")
 assetMass = float(inpt)
 print(" ")
 print("Confirm token issuance amount:")
 print(" ")
-token_ratio,hour = am.token_ratio()
+bheight = chaininfo["blocks"]
+token_ratio = token_ratio(bheight)
 tokenAmount = assetMass/token_ratio
+print("    token ratio = "+str("%.8f" % token_ratio))
 print("    tokens now = "+str("%.8f" % tokenAmount))
 decode_tx = ocean.call('decoderawtransaction',partial_tx["hex"])
 txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
@@ -109,7 +117,7 @@ if str(inpt) != "Yes":
     sys.exit()
 
 #hard-coded address for the block-signing script
-if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "1KMAXfyaZj28o81w8zHSqKNbeS5Pvg7Pjm":
+if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9":
     print("WARNING: re-issuance address is not the block-signing script")
     inpt = input("Proceed? ")
     print(" ")
@@ -182,24 +190,32 @@ print("Submit transaction to Ocean network")
 submit_tx = ocean.call('sendrawtransaction',full_sig_tx["hex"])
 print("        txid: "+str(submit_tx))
 print(" ")
-print("Pause for on-chain confirmation")
-#pause for 2 minutes
-time.sleep(120)
 
-print(" ")
-print("Confirm asset created on-chain")
-#call the token info rpc
-utxorep = ocean.call('getutxoassetinfo')
-asset_conf = False
-for entry in utxorep:
-    if entry["asset"] == decode_tx["vin"][0]["issuance"]["asset"]:
-        if entry["amountspendable"] == txTokenAmount:
-            asset_conf = True
-if not asset_conf:
-    print("ERROR: Issuance transaction not confirmed")
-    sys.exit()
-print(" ")
+unconfirmed = True
+while unconfirmed:
+    print("Pause for on-chain confirmation")
+    for i in range(35):
+        sys.stdout.write('\r')
+        sys.stdout.write('.'*i)
+        sys.stdout.flush()
+        sleep(2)
 
+    print(" ")
+    print("    Check asset created on-chain")
+    #call the token info rpc
+    utxorep = ocean.call('getutxoassetinfo')
+    asset_conf = False
+    for entry in utxorep:
+        if entry["asset"] == decode_tx["vin"][0]["issuance"]["asset"]:
+            if entry["amountspendable"] == txTokenAmount:
+                asset_conf = True
+                unconfirmed = False
+    if not asset_conf:
+        print("WARNING: Issuance transaction not confirmed")
+        sys.exit()
+print(" ")
+print("Asset on-chain issuance confirmed")
+print(" ")
 print("Add signature to mapping object:")
 new_map_obj.sign_db(c2_privkey,2)
 print(" ")

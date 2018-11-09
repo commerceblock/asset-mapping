@@ -23,6 +23,7 @@ map_obj.load_json('map.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str(fmass))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
+print("    Blockheight: "+str(map_obj.get_height()))
 con_keys = am.ConPubKey()
 con_keys.load_json('controllers.json')
 key_list = con_keys.list_keys()
@@ -46,12 +47,16 @@ rpcuser = 'user1'
 rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
+chaininfo = ocean.call('getblockchaininfo')
+print("    Current blockheight: "+str(chaininfo["blocks"]))
+print("    Block time: "+str(chaininfo["mediantime"])+" ("+datetime.fromtimestamp(chaininfo["mediantime"]).strftime('%c')+")")
+print(" ")
 
 inpt = input("Enter issuance address: ")
 issueToAddress = str(inpt)
 print(" ")
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "1KMAXfyaZj28o81w8zHSqKNbeS5Pvg7Pjm"
+reissuanceToken = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
 print(" ")
 print("    Issuance address: "+issueToAddress)
 print("    Reissuance address: "+reissuanceToken)
@@ -78,11 +83,12 @@ if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
-print("Determine token issuance on "+str(datetime.now()))
+chaininfo = ocean.call('getblockchaininfo')
+print("Determine token issuance at block height "+str(chaininfo["blocks"]))
 print(" ")
-token_ratio,hour = am.token_ratio()
+bheight = int(chaininfo["blocks"]) 
+token_ratio = am.token_ratio(bheight)
 tokenAmount = assetMass/token_ratio
-print("    hour = "+str(hour))
 print("    token ratio = "+str("%.8f" % token_ratio))
 print("    tokens = "+str("%.8f" % tokenAmount))
 print(" ")
@@ -128,6 +134,7 @@ partial_sig_tx = ocean.call('signrawtransaction',issuancetx["rawtx"],[{"txid":tx
 print("Add signature to mapping object:")
 map_obj.clear_sigs()
 map_obj.update_time()
+map_obj.update_height()
 map_obj.sign_db(c1_privkey,1)
 print(" ")
 print("Export partially signed data objects")

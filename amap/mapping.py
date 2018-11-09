@@ -125,6 +125,10 @@ class MapDB(object):
 #return the timestamp of the object
         return self.map["time"]
 
+    def get_height(self):
+#return the blockheight of the object
+        return self.map["height"]
+
     def remove_asset(self,asset_reference):
 #function to remove a paticular asset reference from the object
         rmasset = []
