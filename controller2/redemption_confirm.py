@@ -95,13 +95,13 @@ if assetMass != map_obj.get_mass_assetid(rref):
     print("Exit")
     sys.exit()
 
-rdate = datetime.strptime(input('Enter the redemption date and hour in the format year-month-day:hour: '), "%Y-%m-%d:%H")
+inpt = input("Enter the redemption initiation block height: ")
+blkh = int(inpt)
 print(" ")
-print("    Redemption date: "+str(rdate))
 
-token_ratio,hour = am.token_ratio(rdate)
+token_ratio = am.token_ratio(blkh)
 tokenAmount = assetMass/token_ratio
-print("    Token ratio: "+str("%.8f" % token_ratio)+" at hour "+str(hour))
+print("    Token ratio: "+str("%.8f" % token_ratio)+" at height "+str(blkh))
 print("    Required total tokens: "+str("%.8f" % (assetMass/token_ratio)))
 print(" ")
 inpt = input("Enter total number of burnt token types: ")

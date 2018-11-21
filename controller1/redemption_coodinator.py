@@ -72,13 +72,13 @@ if assetMass != map_obj.get_mass_assetid(rref):
     print("Exit")
     sys.exit()
 
-rdate = datetime.strptime(input('Enter the redemption date and hour in the format year-month-day:hour: '), "%Y-%m-%d:%H")
+inpt = input("Enter the redemption block height: ")
 print(" ")
-print("    Redemption date: "+str(rdate))
+blkh = int(inpt)
 
-token_ratio,hour = am.token_ratio(rdate)
+token_ratio = am.token_ratio(blkh)
 tokenAmount = assetMass/token_ratio
-print("    Token ratio: "+str("%.8f" % token_ratio)+" at hour "+str(hour))
+print("    Token ratio: "+str("%.8f" % token_ratio)+" at block height "+str(blkh))
 print("    Required total tokens: "+str("%.8f" % (assetMass/token_ratio)))
 print(" ")
 inpt = input("Enter total number of burnt token types: ")
@@ -124,10 +124,11 @@ for btoken in burnt_tokens:
                 print("ERROR: Excess tokens on chain - check burn")
                 print("Exit")
                 sys.exit()
+
 print(" ")
 print("Token remapping")
 map_orig = map_obj
-success = map_obj.remap_assets(burnt_tokens,rref,rdate)
+success = map_obj.remap_assets(burnt_tokens,rref,blkh)
 print(" ")
 if not success:
     print("Exit - remapping failed")
@@ -150,6 +151,7 @@ c1_privkey = open('c1_privkey.dat','r').read()
 print("Add signature to mapping object:")
 map_obj.clear_sigs()
 map_obj.update_time()
+map_obj.update_height(blkh)
 map_obj.sign_db(c1_privkey,1)
 print(" ")
 print("Export partially signed mapping object")
