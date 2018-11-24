@@ -9,6 +9,9 @@ import boto3
 import sys
 from datetime import datetime
 
+#hard-coded federation blocksigning multisig address
+fedAddress = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
+
 print("Issue an new asset")
 print(" ")
 print("Controller 2: Confirmer")
@@ -83,21 +86,22 @@ ocean = rpc.RPCHost(url)
 chaininfo = ocean.call('getblockchaininfo')
 print("    Current blockheight: "+str(chaininfo["blocks"]))
 print("    Block time: "+str(chaininfo["mediantime"])+" ("+datetime.fromtimestamp(chaininfo["mediantime"]).strftime('%c')+")")
-print(" ")
 
-inpt = input("Enter new asset mass: ")
-assetMass = float(inpt)
 print(" ")
-print("Confirm token issuance amount:")
+print("Confirm token issuances:")
 print(" ")
 bheight = chaininfo["blocks"]
-token_ratio = token_ratio(bheight)
-tokenAmount = assetMass/token_ratio
+token_ratio = am.token_ratio(bheight)
 print("    token ratio = "+str("%.8f" % token_ratio))
-print("    tokens now = "+str("%.8f" % tokenAmount))
-decode_tx = ocean.call('decoderawtransaction',partial_tx["hex"])
-txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
-print("    transaction tokens = "+str(txTokenAmount))
+print(" ")
+
+numiss = int(partial_tx["numiss"])
+for issit in range(numiss):
+    tokenAmount = float(partial_tx[str(issit)]["mass"])/token_ratio
+    decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
+    txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
+    print("    mass = "+str("%.3f" % partial_tx[str(issit)]["mass"])+"   expected tokens = "+str("%.8f" % tokenAmount)+"   transaction tokens = "+str("%.8f" % txTokenAmount))
+
 print(" ")
 inpt = input("Confirm token issuance correct? ")
 print(" ")
@@ -107,8 +111,12 @@ if str(inpt) != "Yes":
 
 print(" ")
 print("Confirm addresses:")
-print("    Issuance address: "+decode_tx["vout"][0]["scriptPubKey"]["addresses"][0])
-print("    Re-issuance address: "+decode_tx["vout"][1]["scriptPubKey"]["addresses"][0])
+print(" ")
+
+for issit in range(numiss):
+    decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
+    print("    Issuance address: "+decode_tx["vout"][0]["scriptPubKey"]["addresses"][0]+"    Re-issuance address: "+decode_tx["vout"][1]["scriptPubKey"]["addresses"][0])
+
 print(" ")
 inpt = input("Addresses correct? ")
 print(" ")
@@ -117,32 +125,35 @@ if str(inpt) != "Yes":
     sys.exit()
 
 #hard-coded address for the block-signing script
-if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9":
-    print("WARNING: re-issuance address is not the block-signing script")
-    inpt = input("Proceed? ")
-    print(" ")
-    if str(inpt) != "Yes":
-        print("Exit")
-        sys.exit()
+for issit in range(numiss):
+    decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
+    if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != fedAddress:
+        print("WARNING: re-issuance address is not the block-signing script")
+        inpt = input("Proceed? ")
+        print(" ")
+        if str(inpt) != "Yes":
+            print("Exit")
+            sys.exit()
 print(" ")
 
-print("Add partial signature to issuance transaction")
+print("Add partial signature to issuance transactions")
 c2_privkey = open('c2_privkey.dat','r').read()
 #version byte is 239 for ocean regtest mode
 version_byte = 0
 #encode private key to be importable to client
 c2_pk_wif = bc.encode_privkey(c2_privkey,'wif_compressed',version_byte)
 print(" ")
-full_sig_tx = ocean.call('signrawtransaction',partial_tx["hex"],[{"txid":partial_tx["txid"],"vout":int(partial_tx["vout"]),"scriptPubKey":partial_tx["scriptPubKey"],"redeemScript":p2sh["redeemScript"]}],[c2_pk_wif])
 
-if full_sig_tx["complete"]:
-    print("    2-of-3 signature complete and valid")
-else:
-    print("    2-of-3 signature incomplete or invalid")
-    print("Exit")
-    sys.exit()
-
-decode_full = ocean.call('decoderawtransaction',full_sig_tx["hex"])
+fullSigTxList = []
+for issit in range(numiss):
+    full_sig_tx = ocean.call('signrawtransaction',partial_tx[str(issit)]["hex"],[{"txid":partial_tx[str(issit)]["txid"],"vout":int(partial_tx[str(issit)]["vout"]),"scriptPubKey":partial_tx[str(issit)]["scriptPubKey"],"redeemScript":p2sh["redeemScript"]}],[c2_pk_wif])
+    if full_sig_tx["complete"]:
+        print("    2-of-3 signature complete and valid")
+        fullSigTxList.append(full_sig_tx)
+    else:
+        print("    2-of-3 signature incomplete or invalid")
+        print("Exit")
+        sys.exit()
 
 print(" ")
 print("Update policy asset output list")
@@ -156,20 +167,26 @@ with open("ptxo.dat",'r') as file:
     utxolist = file.readlines()
 utxolist = [x.strip() for x in utxolist]
 
+
+
 with open("ptxo.dat",'w') as file:
     for sline in utxolist:
         line = sline.split()
-        if line[0] == partial_tx["txid"] and int(line[1]) == int(partial_tx["vout"]):
-            continue
-        else:
+        for issit in range(numiss):
+            decode_full = ocean.call('decoderawtransaction',fullSigTxList[issit]["hex"])
+            replaced = False
+            if line[0] == partial_tx[str(issit)]["txid"] and int(line[1]) == int(partial_tx[str(issit)]["vout"]):
+                file.write(decode_full["txid"]+" "+"2"+" "+str(decode_full["vout"][2]["value"])+"\n")
+                replaced = True
+                break
+        if not replaced:    
             file.write(line[0]+" "+str(line[1])+" "+str(line[2])+"\n")
-    file.write(decode_full["txid"]+" "+"2"+" "+str(decode_full["vout"][2]["value"])+"\n")
-
+        
 #upload new list to S3
 s3.Object('cb-mapping','ptxo.dat').put(Body=open('ptxo.dat','rb'))
 
 print(" ")
-inpt = input("Confirm transaction send? ")
+inpt = input("Confirm send transactions? ")
 print(" ")
 if str(inpt) != "Yes":
     print("Exit")
@@ -182,14 +199,19 @@ while not submitok:
     bestblock = ocean.call('getblockheader',bbhash)
     blockheight = int(bestblock["height"])
     if blockheight%60 == 0:
+        print("pause for next block")
+        print(" ")
         time.sleep(60)
     else:
         submitok = True
 
-print("Submit transaction to Ocean network")
-submit_tx = ocean.call('sendrawtransaction',full_sig_tx["hex"])
-print("        txid: "+str(submit_tx))
+print("Submit transactions to Ocean network")
 print(" ")
+
+for issit in range(numiss):
+    submit_tx = ocean.call('sendrawtransaction',fullSigTxList[issit]["hex"])
+    print("        txid: "+str(submit_tx))
+    print(" ")
 
 unconfirmed = True
 while unconfirmed:
@@ -198,21 +220,24 @@ while unconfirmed:
         sys.stdout.write('\r')
         sys.stdout.write('.'*i)
         sys.stdout.flush()
-        sleep(2)
+        time.sleep(2)
 
     print(" ")
-    print("    Check asset created on-chain")
+    print("    Check assets created on-chain")
     #call the token info rpc
     utxorep = ocean.call('getutxoassetinfo')
     asset_conf = False
-    for entry in utxorep:
-        if entry["asset"] == decode_tx["vin"][0]["issuance"]["asset"]:
-            if entry["amountspendable"] == txTokenAmount:
-                asset_conf = True
-                unconfirmed = False
-    if not asset_conf:
-        print("WARNING: Issuance transaction not confirmed")
-        sys.exit()
+    confs = 0
+
+    for issit in range(numiss):
+        decode_full = ocean.call('decoderawtransaction',fullSigTxList[issit]["hex"])
+        for entry in utxorep:
+            if entry["asset"] == decode_full["vin"][0]["issuance"]["asset"]:
+                if entry["amountspendable"] == decode_full["vin"][0]["issuance"]["assetamount"]:
+                    asset_conf = True
+                    confs += 1
+    if confs == numiss: unconfirmed = False
+
 print(" ")
 print("Asset on-chain issuance confirmed")
 print(" ")

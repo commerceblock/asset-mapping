@@ -8,6 +8,9 @@ import json
 import boto3
 import sys
 
+#the reissuance token is hard coded to the federation block-signing script
+reissuanceToken = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
+
 print("Issue a new asset")
 
 print(" ")
@@ -52,30 +55,46 @@ print("    Current blockheight: "+str(chaininfo["blocks"]))
 print("    Block time: "+str(chaininfo["mediantime"])+" ("+datetime.fromtimestamp(chaininfo["mediantime"]).strftime('%c')+")")
 print(" ")
 
-inpt = input("Enter issuance address: ")
-issueToAddress = str(inpt)
+inpt = input("Enter number of asset issuances: ")
+numiss = int(inpt)
 print(" ")
-#the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
+
+assetRefList = []
+assetYearList = []
+assetManList = []
+assetMassList = []
+issueToAddressList = []
+
+for issit in range(numiss):
+	print("Asset issuance "+str(issit+1))
+
+	inpt = input("    Enter issuance address: ")
+	issueToAddress = str(inpt)
+	issueToAddressList.append(issueToAddress)
+	print(" ")
+	print("    Specify asset reference data: ")
+	print(" ")
+	inpt = input("        Enter serial number: ")
+	assetRef = str(inpt)
+	inpt = input("        Enter year of manufacture: ")
+	assetYear = str(inpt)
+	inpt = input("        Enter manufacturer: ")
+	assetMan = str(inpt)
+	inpt = input("        Enter fine mass: ")
+	assetMass = float(inpt)
+	print(" ")
+	assetRefList.append(assetRef)
+	assetYearList.append(assetYear)
+	assetManList.append(assetMan)
+	assetMassList.append(assetMass)
+
+print("Issuance of "+str(issit)+" new assets")
 print(" ")
-print("    Issuance address: "+issueToAddress)
-print("    Reissuance address: "+reissuanceToken)
-print(" ")
-print("Specify asset reference data: ")
-print(" ")
-inpt = input("        Enter serial number: ")
-assetRef = str(inpt)
-inpt = input("        Enter year of manufacture: ")
-assetYear = str(inpt)
-inpt = input("        Enter manufacturer: ")
-assetMan = str(inpt)
-inpt = input("        Enter fine mass: ")
-assetMass = float(inpt)
-print(" ")
-print("        Ref: "+assetRef)
-print("        Year: "+assetYear)
-print("        Man: "+assetMan)
-print("        Mass: "+str(assetMass))
+print("  Serial number    Year      Manufacturer      Fine mass")
+print("----------------------------------------------------------")
+for issit in range(numiss):
+	print("      "+assetRefList[issit]+"       "+assetYearList[issit]+"        "+assetManList[issit]+"        "+str(assetMassList[issit]))
+
 print(" ")
 inpt = input("Confirm data correct? ")
 print(" ")
@@ -88,14 +107,20 @@ print("Determine token issuance at block height "+str(chaininfo["blocks"]))
 print(" ")
 bheight = int(chaininfo["blocks"]) 
 token_ratio = am.token_ratio(bheight)
-tokenAmount = assetMass/token_ratio
 print("    token ratio = "+str("%.8f" % token_ratio))
-print("    tokens = "+str("%.8f" % tokenAmount))
+
+print(" ")
+tokenAmountList = []
+print("Token issuances: ")
+for issit in range(numiss):
+	tokenAmount = assetMassList[issit]/token_ratio
+	assref = assetRefList[issit]+"-"+assetYearList[issit]+"-"+assetManList[issit]
+	print("    Asset: "+assref+"  tokens = "+str("%.8f" % tokenAmount))
+	tokenAmountList.append(tokenAmount)
+
 print(" ")
 
-print("Create raw issuance transaction:")
-print(" ")
-print("Select policy asset UTXO")
+print("Create raw issuance transactions:")
 #the UTXO database lists unspent policy asset outputs that can be used for issuance
 #each line lists the txid, the vout, the value of the output and scriptPubKey
 
@@ -105,36 +130,51 @@ s3.Bucket('cb-mapping').download_file('ptxo.dat','ptxo.dat')
 with open("ptxo.dat") as file:
     utxolist = file.readlines()
 utxolist = [x.strip() for x in utxolist]
-txin = utxolist[0].split()
+
+if len(utxolist) < numiss:
+	print("ERROR: more asset issuances than policy asset outputs")
+	print("Exiting ...")
+	sys.exit()
+
+issuancetxList = []
+txinList = []
+for issit in range(numiss):
+	txin = utxolist[issit].split()
+	changeAmount = float(txin[2])
+	issuancetx = ocean.call('createrawissuance',issueToAddressList[issit],str("%.8f" % tokenAmountList[issit]),reissuanceToken,'1000',p2sh["address"],str("%.8f" % changeAmount),'1',txin[0],str(int(txin[1])))
+	print("    New token ID: "+issuancetx["asset"])
+	issuancetxList.append(issuancetx)
+	txinList.append(txin)
+
 print(" ")
-print("    TxID: "+txin[0]+" vout: "+txin[1])
-print("    Ammount: "+txin[2])
-print(" ")
-changeAmount = float(txin[2])
-issuancetx = ocean.call('createrawissuance',issueToAddress,str("%.8f" % tokenAmount),reissuanceToken,'1000',p2sh["address"],str("%.8f" % changeAmount),'1',txin[0],str(int(txin[1])))
-print("    New token ID: "+issuancetx["asset"])
+print("Add new entries to mapping object:")
 print(" ")
 
-print("Add new entry to mapping object:")
-print(" ")
-map_obj.add_asset(assetRef,assetYear,assetMass,issuancetx["asset"],assetMan)
+for issit in range(numiss):
+	map_obj.add_asset(assetRefList[issit],assetYearList[issit],assetMassList[issit],issuancetxList[issit]["asset"],assetManList[issit])
+
 tmass = map_obj.get_total_mass()
 print("     New total mass: "+str(tmass))
 
 print(" ")
 
 print("Add partial signature to issuance transaction")
+
 c1_privkey = open('c1_privkey.dat','r').read()
 #version byte is 239 for ocean regtest mode
 version_byte = 0
 #encode private key to be importable to ocean client
 c1_pk_wif = bc.encode_privkey(c1_privkey,'wif_compressed',version_byte)
 
-partial_sig_tx = ocean.call('signrawtransaction',issuancetx["rawtx"],[{"txid":txin[0],"vout":int(txin[1]),"scriptPubKey":p2sh["scriptPubKey"],"redeemScript":p2sh["redeemScript"]}],[c1_pk_wif])
+partialSigTxList = {}
+for issit in range(numiss):
+	partial_sig_tx = ocean.call('signrawtransaction',issuancetxList[issit]["rawtx"],[{"txid":txinList[issit][0],"vout":int(txinList[issit][1]),"scriptPubKey":p2sh["scriptPubKey"],"redeemScript":p2sh["redeemScript"]}],[c1_pk_wif])
+	partialSigTxList[issit] = partial_sig_tx
+
 print("Add signature to mapping object:")
 map_obj.clear_sigs()
 map_obj.update_time()
-map_obj.update_height()
+map_obj.update_height(bheight)
 map_obj.sign_db(c1_privkey,1)
 print(" ")
 print("Export partially signed data objects")
@@ -144,12 +184,17 @@ print("     ps1_tx.json")
 map_obj.export_json("ps1_map.json")
 
 #add the input transaction data to the tx file to enable the second signature to be generated
-partial_sig_tx["scriptPubKey"] = p2sh["scriptPubKey"]
-partial_sig_tx["txid"] = txin[0]
-partial_sig_tx["vout"] = txin[1]
-partial_sig_tx["asset"] = issuancetx["asset"]
+for issit in range(numiss):
+	partialSigTxList[issit]["scriptPubKey"] = p2sh["scriptPubKey"]
+	partialSigTxList[issit]["txid"] = txinList[issit][0]
+	partialSigTxList[issit]["vout"] = txinList[issit][1]
+	partialSigTxList[issit]["asset"] = issuancetxList[issit]["asset"]
+	partialSigTxList[issit]["mass"] = assetMassList[issit]
+
+partialSigTxList["numiss"] = numiss
+
 with open("ps1_tx.json",'w') as file:
-          json.dump(partial_sig_tx,file)
+          json.dump(partialSigTxList,file)
 
 #upload new partially signed objects 
 s3.Object('cb-mapping','ps1_tx.json').put(Body=open('ps1_tx.json','rb'))

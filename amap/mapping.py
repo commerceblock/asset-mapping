@@ -123,7 +123,7 @@ class MapDB(object):
 #function to update the time-stamp of the object
         self.map["time"] = ntime
 
-    def update_height(blockheight):
+    def update_height(self,blockheight):
 #function to updatde the block-height
         self.map["height"] = blockheight
 
@@ -159,7 +159,7 @@ class MapDB(object):
             return False
 #the signature is generated over the asset list json object concatinated with the policy and time
         jsonstring = json.dumps(self.map["assets"],sort_keys=True)
-        jsonstring += str(self.map["n"]) + str(self.map["m"]) + str(self.map["time"] + str(self.map["height"]))
+        jsonstring += str(self.map["n"]) + str(self.map["m"]) + str(self.map["time"]) + str(self.map["height"])
         strhash = bc.sha256(jsonstring)
         nvalid = 0
 #check all possible combinations of public keys and signatures
@@ -185,7 +185,7 @@ class MapDB(object):
     def sign_db(self,privkey,index):
 #function to add a signature to the mapping object generated from the supplied key
         jsonstring = json.dumps(self.map["assets"],sort_keys=True)
-        jsonstring += str(self.map["n"]) + str(self.map["m"]) +str(self.map["time"] + str(self.map["height"]))
+        jsonstring += str(self.map["n"]) + str(self.map["m"]) +str(self.map["time"]) + str(self.map["height"])
         strhash = bc.sha256(jsonstring)
         sig = bc.ecdsa_sign(strhash,privkey)
         self.map["sigs"][index] = sig
