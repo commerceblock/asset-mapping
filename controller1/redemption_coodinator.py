@@ -158,3 +158,6 @@ print("Export partially signed mapping object")
 print(" ")
 print("     ps1_map.json")
 map_obj.export_json("ps1_map.json")
+
+#upload new partially signed objects
+s3.Object('cb-mapping','ps1_map.json').put(Body=open('ps1_map.json','rb'))

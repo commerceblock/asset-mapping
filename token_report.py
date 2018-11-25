@@ -17,7 +17,7 @@ s3.Bucket('cb-mapping').download_file('map.json','map.json')
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
 fmass = map_obj.get_total_mass()
-print("    Total mass: "+str(fmass))
+print("    Total mass: "+str("%.3f" % fmass))
 print(" ")
 
 print("Connecting to Ocean client")

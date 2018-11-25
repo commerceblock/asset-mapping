@@ -18,6 +18,7 @@ print(" ")
 print("Load the current mapping object - connecting to S3")
 s3 = boto3.resource('s3')
 s3.Bucket('cb-mapping').download_file('map.json','map.json')
+s3.Bucket('cb-mapping').download_file('ps1_tx.json','ps1_tx.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
