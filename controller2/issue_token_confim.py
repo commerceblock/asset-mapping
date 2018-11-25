@@ -84,8 +84,10 @@ rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 chaininfo = ocean.call('getblockchaininfo')
+bestblockhash = chaininfo["bestblockhash"]
+bestblock = ocean.call('getblock',bestblockhash)
 print("    Current blockheight: "+str(chaininfo["blocks"]))
-print("    Block time: "+str(chaininfo["mediantime"])+" ("+datetime.fromtimestamp(chaininfo["mediantime"]).strftime('%c')+")")
+print("    Block time: "+str(bestblock["time"])+" ("+datetime.fromtimestamp(bestblock["time"]).strftime('%c')+")")
 
 print(" ")
 print("Confirm token issuances:")
