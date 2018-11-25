@@ -10,89 +10,51 @@ import time
 
 print("Burn tokens")
 print(" ")
-print("Connecting to Ocean client")
+print("Connecting to Ocean client wallet")
 print(" ")
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
+rpcport = 18885
+rpcuser = 'user2'
+rpcpassword = 'password2'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
-inpt = input("Enter total mass: ")
-assetMass = float(inpt)
+inpt = input("Freeze TxID: ")
+txid = str(inpt)
+print(" ")
+inpt = input("Number of outputs: ")
+print(" ")
+nout = int(inpt)
+vouts = []
+for it in range(nout):
+	inpt = input("  vout = ")
+	vouts.append(int(inpt))
 print(" ")
 
-print("Determine equivalent tokens on "+str(datetime.now()))
-print(" ")
-token_ratio,hour = am.token_ratio()
-tokenAmount = assetMass/token_ratio
-print("    hour = "+str(hour))
-print("    token ratio = "+str("%.8f" % token_ratio))
-print("    tokens = "+str("%.8f" % tokenAmount))
-print(" ")
-print("Determine token outputs")
+freezetx = ocean.call('getrawtransaction',txid,True)
 
-tokenamnt = tokenAmount
 amount_list = []
-token_list = []
-txid_list = []
-vout_list = []
-#find tokens to burn
-unspentlist = ocean.call('listunspent')
-for unspent in unspentlist:
-	if unspent["amount"] < 9.9:
-		if unspent["amount"] >= tokenamnt:
-			amount_list.append(tokenamnt)
-			token_list.append(unspent["asset"])
-			txid_list.append(unspent["txid"])
-			vout_list.append(unspent["vout"])
-			change_amount = unspent["amount"] - tokenamnt
-			change_asset = unspent["asset"]
-			break
-		else:
-			amount_list.append(unspent["amount"])
-			token_list.append(unspent["asset"])
-			txid_list.append(unspent["txid"])
-			vout_list.append(unspent["vout"])
-			tokenamnt -= unspent["amount"]
+asset_list = []
+for it in range(nout):
+	for vout in freezetx["vout"]:
+		if vout["n"] == vouts[it]:
+			val = vout["value"]
+			amount_list.append(val)
+			asset_list.append(vout["asset"])
 
-#tokens sent to burn address
-for it in range(len(amount_list)):
-	print("Burn "+str("%.8f" % amount_list[it])+" of token "+token_list[it])
+for it in range(nout):
+	print("Burn "+str(amount_list[it])+" of asset "+asset_list[it])
 
 print(" ")
-print("Change "+str("%.8f" % change_amount)+" of token "+change_asset)
-
+inpt = input("Confirm Burn? ")
 print(" ")
-print("Generate burn transactions")
-inpt = input("Enter change address: ")
-changeAddress = str(inpt)
-print(" ")
+if str(inpt) != "Yes":
+    print("Exit")
+    sys.exit()
 
-for it in range(len(amount_list)-1):
-	inputs = []
-	outpoint = {}
-	outpoint["txid"] = txid_list[it]
-	outpoint["vout"] = vout_list[it]
-	inputs.append(outpoint)
+for it in range(nout):
+	
+	burntx = ocean.call('createrawburn',txid,str(vouts[it]),asset_list[it],amount_list[it])
+	signtx = ocean.call('signrawtransaction',burntx["hex"])
+	sendtx = ocean.call('sendrawtransaction',signtx["hex"])
 
-	burnout = {}
-	burnout["data"] = "dead"
-
-	print(inputs)
-	print(burnout)
-
-	burntx = ocean.call('createrawtransaction',inputs,burnout)
-	subtx = ocean.call('sendrawtransaction',burntx)
-
-inputs = []
-outpoint = {}
-outpoint["txid"] = txid_list[len(amount_list)]
-outpoint["vout"] = vout_list[len(amount_list)]
-inputs.append(outpoint)
-
-burnout = {}
-burnout["data"] = "dead"
-burnout[changeAddress] = change_amount
-burntx = ocean.call('createrawtransaction',inputs,burnout)
-subtx = ocean.call('sendrawtransaction',burntx)
+print("Burn transactions complete")
