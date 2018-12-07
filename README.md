@@ -41,13 +41,28 @@ Returns the 32 byte private key and correspondoing compressed secp256k1 EC publi
 
 Returns the token to asset ratio at the supplied blockheight. This function is hard-coded with the initial token to asset ratio and the inflation rate as a function of block height. 
 
-A mapping object is instantated with the `MapDB` class, and the constructor is optionally passed the n-of-m multisig policy. The mapping object is internally handled as a dictionary object and writen to file as a JSON object. 
+A mapping object is instantated with the `MapDB` class, and the constructor is optionally passed the n-of-m multisig policy (default 2-of-3). The mapping object is internally handled as a dictionary object and writen to file as a JSON object. 
 
 The object has the following methods:
 
 Method | Description
 --- | ---
 `add_asset(asset_ref,year_ref,mass,tokenid,manufacturer)` | Create a new entry in the mapping object: `asset_ref`, `year_ref` and `manufacturer` define the full asset reference, `mass` is the amount of asset and `tokenid` is the Ocean generated 32 byte token ID. 
+`update_time(ntime)` | Set the mapping object timestamp (seconds since UNIX epoch). If no argument is given, the current system time is used. 
+`update_height(blockheight)` | Set the blockheight stamp in the mapping object. 
+`get_time()` | Return the current object timestamp
+`get_height()` |  Return the current object block height. 
+`remove_asset(asset_reference)` | Remove all assets from the object with the supplied asset reference. 
+`verify_multisig(controller_pubkeys)` | Verify the object ECDSA signature against the object multisig policy. `controller_pubkeys` is a list of the hex encoded (compressed) controller public keys. Returns either `True` or `False`. 
+`verify_blockchain_commitment(commit)` | Verify the SHA256 hash of the entire object against the supplied value. Returns either `True` or `False`. 
+`load_json(filename)` | Load a JSON encoded object from file. `filename` is the file path. 
+`sign_db(privkey,index)` | Add an ECDSA signature to the object, using a hex encoded 32 byte private key `privkey`. `index` is used to specify the private key owner (i.e. the controller number). 
+`export_json(filename)` | Export the object to a JSON encoded file. `filename` is the file path.
+`print_json()` | Prints the JSON encoded object to screen. 
+`remap_assets(burnt_tokens,asset_reference,redemption_height)` | Remap the assets in the object as an arbitrary number of tokens are destroyed to redeem a single asset. `burnt_tokens` is an array of the token IDs that have been burnt and the corresponding amounts. `asset_reference` is the full reference of the asset that is being redeemed. `redemption_height` is the blockchain height at which the redemption was initiated. Returns `True` if successful, or `False` with an error message if the re-mapping fails due to incorrect supplied values. 
+`get_total_mass()` | Returns the total amount of all assets in the mapping object. 
+`get_mass_tokenid(tokenid)` | Returns the total amount of assets mapped to `tokenid`. 
+`get_mass_asset(asset_ref)` | Returns the total amount of `asset_ref`. 
 
 ## Scripts
 
