@@ -2,7 +2,7 @@
 
 asset-man is a Python 3 library and set of associated scripts/utilities developed to manage the issuance, redemption, mapping and monitoring of tokenised assets on an Ocean blockchain. The core mapping library functions are independent of the blockchain client interface, but the _action_ scripts are designed to interface with the Ocean client RPCs. 
 
-The library enables the creation and management of a _mapping object_ which contains the cannonical mapping of on-chain token IDs to real-world asset references, and which forms a central part of the definition of the ownership of an asset (along with proof of ownership of the blockchain tokens via output private keys). 
+The library enables the creation and management of a _mapping object_ which contains the canonical mapping of on-chain token IDs to real-world asset references, and which forms a central part of the definition of the ownership of an asset (along with proof of ownership of the blockchain tokens via output private keys). 
 
 ## Requirements
 
@@ -84,9 +84,23 @@ Initiates the issuance of new tokens corresponding to controlled assets, perform
 
 `issue_token_confirm.py`
 
-Completes the issuance of new tokens, performed by the confirmer. The script retrieves parially signed mapping object and issuance transaction, and confirms the issuance details. The confirmer signatures are then added and the issuance transaction is broadcast to the network. Once confirmation is recieved, the fully signed mapping object is uploaded to S3. 
+Completes the issuance of new tokens, performed by the confirmer. The script retrieves partially signed mapping object and issuance transaction, and confirms the issuance details. The confirmer signatures are then added and the issuance transaction is broadcast to the network. Once confirmation is recieved, the fully signed mapping object is uploaded to S3. 
 
+`redemption_coordinator.py`
 
+Initiates the process for removing an asset from the the mapping object. The script requires the types and amounts of burnt tokens to be entered which is confirmed against the blockchain, and the token-asset mappings are then updated by the re-mapping algorithm. The script then outputs the modified and partially signed mapping object and uploads to S3. 
+
+`redemption_confirmer.py`
+
+Completes the redemption/re-mapping process. The partially signed modified mapping object is retrieved from S3 and compared to the current version. The types and amounts or burnt tokens are entered and compared with the on-chain state. The script then fully signs the mapping object and uploads it to S3. 
+
+`sig_verify.py`
+
+Reads in `map.json` and `controllers.json` and verifies the signatures over the mapping object according the the multisig policy and the controller public keys. 
+
+`token_report.py`
+
+Retrieves mapping object from the S3 bucket and connects to the Ocean client to perform a scan of all blockchain UTXOs and produces a comparison report. Any tokens issued on chain and not included in the mapping object, or vice-versa are identified. 
 
 
 

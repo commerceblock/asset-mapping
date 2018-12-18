@@ -14,9 +14,9 @@ print(" ")
 #the inflation schedule and parameters
 
 #reissuance address: the address that inflated tokens are paid to
-reissuanceAddr = "177j9awSa1uYqX5kXHdWu5k2P7ZhYMKf44"
+reissuanceAddr = "19mx1SCDKSo3UC5dnyTXAMsGfDpx1im9EJ"
 #the reissuer address (for testing this is a node wallet adress) - will be the federation signing script
-fedAddress = "1KMAXfyaZj28o81w8zHSqKNbeS5Pvg7Pjm"
+fedAddress = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
 #annual inflation rate (not demurrage rate)
 arate = 0.0101010101010101
 #inflation interval (in blocks)
@@ -52,8 +52,9 @@ while client:
 	bestblock = ocean.call('getblockheader',bbhash)
 
 	blockheight = int(bestblock["height"])
+	prevheight = 0
 
-	if blockheight%interval == 0 and prevheight != blockheight:
+	if blockheight%interval == 0 and prevheight != blockheight and False:
 
 		#compare the last saved re-issuance with the current best block
 		#TODO: handle the case where the blockchain stops
@@ -199,5 +200,17 @@ while client:
 	prevheight = blockheight
 
 	#sleep for a minute - only check every minute
-	time.sleep(60)
+	time.sleep(15)
+
+	newblock = ocean.call('getnewblockhex')
+	time.sleep(1)
+	blocksig = ocean.call('signblock',newblock)
+	time.sleep(1)
+	sigarr = []
+	sigarr.append(blocksig)
+	signedblock = ocean.call('combineblocksigs',newblock,sigarr)
+	time.sleep(1)
+	submitblock = ocean.call('submitblock',signedblock["hex"])
+	print("New block: "+str(blockheight))
+	time.sleep(12)
 

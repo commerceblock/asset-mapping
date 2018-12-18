@@ -222,7 +222,7 @@ while unconfirmed:
         sys.stdout.write('\r')
         sys.stdout.write('.'*i)
         sys.stdout.flush()
-        time.sleep(2)
+        time.sleep(1)
 
     print(" ")
     print("    Check assets created on-chain")

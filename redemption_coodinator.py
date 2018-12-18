@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python                                              
 import amap.mapping as am
 import bitcoin as bc
 from datetime import datetime
@@ -12,13 +11,12 @@ import json
 print("Redemption of tokens for a specified asset")
 
 print(" ")
-print("Controller 2: Confirmer")
+print("Controller 1: Coordinator")
 print(" ")
 
-print("Load the current mapping object - connecting to S3")
+print("Load the mapping object - connecting to S3")
 s3 = boto3.resource('s3')
 s3.Bucket('cb-mapping').download_file('map.json','map.json')
-s3.Bucket('cb-mapping').download_file('ps1_tx.json','ps1_tx.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
@@ -33,28 +31,6 @@ if map_obj.verify_multisig(key_list):
 else:
     print("    Verification failed")
 print(" ")
-
-print("Load the updated mapping object from file")
-new_map_obj = am.MapDB(2,3)
-new_map_obj.load_json('ps1_map.json')
-nmass = new_map_obj.get_total_mass()
-print("    Mass difference: "+str("%.3f" % (nmass-fmass)))
-print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
-print(" ")
-print("Create comparison report")
-print(" ")
-am.diff_mapping(map_obj,new_map_obj)
-print(" ")
-print("Confirm:")
-print("    Changed entries consistent with redemption")
-print("    Amounts correct")
-print(" ")
-
-inpt = input("Confirm diff data correct? ")
-print(" ")
-if str(inpt) != "Yes":
-    print("Exit")
-    sys.exit()
 
 print("Connecting to Ocean client")
 print(" ")
@@ -96,13 +72,13 @@ if assetMass != map_obj.get_mass_assetid(rref):
     print("Exit")
     sys.exit()
 
-inpt = input("Enter the redemption initiation block height: ")
-blkh = int(inpt)
+inpt = input("Enter the redemption block height: ")
 print(" ")
+blkh = int(inpt)
 
 token_ratio = am.token_ratio(blkh)
 tokenAmount = assetMass/token_ratio
-print("    Token ratio: "+str("%.8f" % token_ratio)+" at height "+str(blkh))
+print("    Token ratio: "+str("%.8f" % token_ratio)+" at block height "+str(blkh))
 print("    Required total tokens: "+str("%.8f" % (assetMass/token_ratio)))
 print(" ")
 inpt = input("Enter total number of burnt token types: ")
@@ -126,7 +102,6 @@ for itt in range(ntokens):
 
 print(" ")
 print("Perform token report and confirm burn")
-print(" ")
 #perform a token report to determine that the tokens have been successfully burnt
 utxorep = ocean.call('getutxoassetinfo')
 print("Retrieving UTXO report ...")
@@ -145,29 +120,44 @@ for btoken in burnt_tokens:
             diffr = btoken[2]-amount*token_ratio-btoken[1]*token_ratio
             print("        Difference = "+str("%.3f" % diffr))
             print(" ")
-            if diffr < 0.0:
+            if diffr < -0.0000001:
                 print("ERROR: Excess tokens on chain - check burn")
                 print("Exit")
                 sys.exit()
 
 print(" ")
-c2_privkey = open('c2_privkey.dat','r').read()
-print("Add signature to mapping object:")
-new_map_obj.sign_db(c2_privkey,2)
+print("Token remapping")
+map_orig = map_obj
+success = map_obj.remap_assets(burnt_tokens,rref,blkh)
 print(" ")
-print("Check signatures")
-if new_map_obj.verify_multisig(key_list):
-    print("    Signatures verified")
-else:
-    print("    Signature verification failed")
-    print("    ERROR: exit")
+if not success:
+    print("Exit - remapping failed")
     sys.exit()
-print(" ")
 
-print("Export fully signed mapping object")
+print("Total mass: "+str("%.3f" % map_obj.get_total_mass()))
 print(" ")
-print("     map.json")
-new_map_obj.export_json("map.json")
-print("Upload to server")
-#upload new map to S3
-s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')
+print("Create comparison report:")
+print(" ")
+am.diff_mapping(map_obj,map_orig)
+
+inpt = input("Confirm diff data correct? ")
+print(" ")
+if str(inpt) != "Yes":
+    print("Exit")
+    sys.exit()
+
+print(" ")
+c1_privkey = open('c1_privkey.dat','r').read()
+print("Add signature to mapping object:")
+map_obj.clear_sigs()
+map_obj.update_time()
+map_obj.update_height(blkh)
+map_obj.sign_db(c1_privkey,1)
+print(" ")
+print("Export partially signed mapping object")
+print(" ")
+print("     ps1_map.json")
+map_obj.export_json("ps1_map.json")
+
+#upload new partially signed objects
+s3.Object('cb-mapping','ps1_map.json').put(Body=open('ps1_map.json','rb'))
