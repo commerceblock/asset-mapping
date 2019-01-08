@@ -12,25 +12,28 @@ controller_pub_keys = []
 
 c1_public = input("Enter the public key of controller 1: ")
 if len(c1_public) != 66:
-	print("ERROR: public key format error - must be conpressed")
+    print("ERROR: public key format error - must be conpressed")
     print("Exit")
     sys.exit()
+
 controller_pub_keys.append(c1_public)
 print(" ")
 
 c2_public = input("Enter the public key of controller 2: ")
 if len(c2_public) != 66:
-	print("ERROR: public key format error - must be conpressed")
+    print("ERROR: public key format error - must be conpressed")
     print("Exit")
     sys.exit()
+
 controller_pub_keys.append(c2_public)
 print(" ")
 
 c3_public = input("Enter the public key of controller 3: ")
 if len(c3_public) != 66:
-	print("ERROR: public key format error - must be conpressed")
+    print("ERROR: public key format error - must be conpressed")
     print("Exit")
     sys.exit()
+    
 controller_pub_keys.append(c3_public)
 print(" ")
 
