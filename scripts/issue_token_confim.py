@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 #hard-coded federation blocksigning multisig address
-fedAddress = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
+reissuanceToken = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
 
 print("Issue an new asset")
 print(" ")
@@ -129,7 +129,7 @@ if str(inpt) != "Yes":
 #hard-coded address for the block-signing script
 for issit in range(numiss):
     decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
-    if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != fedAddress:
+    if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != reissuanceToken:
         print("WARNING: re-issuance address is not the block-signing script")
         inpt = input("Proceed? ")
         print(" ")
