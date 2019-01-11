@@ -22,6 +22,10 @@ inpt = input("Enter mass of redemption asset: ")
 assetMass = float(inpt)
 print(" ")
 
+inpt = input("Enter full reference of redemption asset: ")
+assetRef = inpt
+print(" ")
+
 chaininfo = ocean.call('getblockchaininfo')
 bheight = int(chaininfo["blocks"])
 bestblockhash = chaininfo["bestblockhash"]
@@ -137,3 +141,6 @@ print("Signed redemption transaction (hex encoded): ")
 print(" ")
 print(freezetxsigned["hex"])
 
+print("Writing transaction to file: rtx-"+assetRef+".dat")
+with open("rtx-"+assetRef+".dat",'w') as file:
+	file.write(freezetxsigned["hex"])

@@ -45,6 +45,12 @@ for it in range(nout):
 	print("Burn "+str(amount_list[it])+" of asset "+asset_list[it])
 
 print(" ")
+print("Writing burnt asset list to: burntassets.dat")
+with open("burntassets.dat",'w') as file:
+	for it in range(nout):
+		file.write(str(amount_list[it])+" "+asset_list[it])
+
+print(" ")
 inpt = input("Confirm Burn? ")
 print(" ")
 if str(inpt) != "Yes":
