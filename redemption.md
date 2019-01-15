@@ -10,21 +10,30 @@ The redeemer wishes to redeem one of the assets listed in the `rassets.json` obj
 
 The redeemer then chooses an asset to redeem and runs the `freeze_script.py` (after configuring `rpcuser`, `rpcpassword` and `rpcport` to their local Ocean wallet). This script prompts them to enter the reference ID of the asset they have chosen to redeem. The script then interacts with the redeemer wallet to generate a signed _redemption transaction_ that is exported as a file: `rtx-assetid.dat` (where `asset` is the asset reference). This transaction pays the exact quantity of tokens (of any number and type of token ID) to redeem the asset at the current token ratio, back to addresses controlled by the redeemer wallet. In addition, the first output of the transaction consists of zero value paying to a _zero_ address (i.e. `0x0000000000000000000000000000000000000000`) which tags the redemption transaction as _uninflatable_ to the signing nodes. Note that the redemption transaction has not been broadcast at this point. 
 
-The redeemer then initiates the redemption of the asset by sending a request to the _custodian_ (via a web-interface). 
+In addition to the redemption transaction, the redeemer must also pay a _redemption fee_ in tokens. The fee amount `rfee` is displayed on the redemption website, along with custodian fee address (`fAddress`). The redeemer generates an additional raw transaction from their wallet paying the fee to this address, using any tokens, which is exported into a file `rfee.dat`. 
+
+The redeemer then initiates the redemption of the asset by sending a request to the _custodian_ (via a web-interface) which included the two raw transaction files. 
 
 ### Custodian
 
-The custodian is the general term for the entity processing the redemption and the delivery of the asset to the redeemer. The redemption request to the custodian (via a web-interface) then must specify the asset reference ID, and include the `rtx-assetid.dat` transaction file (uploaded as an attachment). [the request may include additional user information and delivery information]. 
+The custodian is the general term for the entity processing the redemption and the delivery of the asset to the redeemer. The redemption request to the custodian (via a web-interface) then must specify the asset reference ID, and include the `rtx-assetid.dat` and `rfee.dat` transaction files (uploaded as attachments). [the request may include additional user information and delivery information]. 
 
 The custodian (back-end, with connection an Ocean node) then performs the following operations:
 
-1. Check that the asset reference is in the `rassets.json` array. 
-2. Decode the raw transaction contained in the `rtx-assetid.dat`
-3. Check that the transaction is valid
-4. Check that the total tokens transfered in the transaction equal the asset quantity multiplied by the current token ratio. 
-5. The asset reference in the `rassets.json` array is marked as _locked_ and the file is uploaded to the S3 bucket. 
+1. Check the redemption fee tx is valid (and pays to the correct custodian address)
+2. Check that the asset reference is in the `rassets.json` array. 
+3. Decode the raw transaction contained in the `rtx-assetid.dat`
+4. Check that the transaction is valid
+5. Check that the total tokens transfered in the transaction equal the asset quantity multiplied by the current token ratio. 
+6. The asset reference in the `rassets.json` array is marked as _locked_ and the file is uploaded to the S3 bucket. 
 
-Once checked, the raw transaction is transmitted to the blockchain network. Once confirmed the redemption request is forwarded to the custodian back office. Once received, the back-office confirms the transaction outputs remain unspent, and then add the output addresses to the _freezelist_ (they will have a secure connection to the _freezelist_ database). 
+Once validity is confirmed, the transactions are submitted after the redeem transaction addresses are added to the freezelist. 
+
+1. Submit fee transaction
+2. Add redemption transaction output addresses to freezelist
+3. Confirm freezelist
+4. Submit the redemption transaction to the network
+5. Confirm - send transactions IDs to the custodian back-office (via e-mail). 
 
 This logic is implemented in the `redeem_check.py` script. 
 
