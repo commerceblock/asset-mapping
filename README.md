@@ -4,6 +4,8 @@ asset-man is a Python 3 library and set of associated scripts/utilities develope
 
 The library enables the creation and management of a _mapping object_ which contains the canonical mapping of on-chain token IDs to real-world asset references, and which forms a central part of the definition of the ownership of an asset (along with proof of ownership of the blockchain tokens via output private keys). 
 
+Detailed guides for the initial controller set-up and sidechain configuration are found in [initialisation.md](initialisation.md), for the token issuance process in [issuance.md](issuance.md) and the asset redemption process in [redemption.md](redemption.md). 
+
 ## Requirements
 
 In addition to Python 3.* the following libraries are required:
