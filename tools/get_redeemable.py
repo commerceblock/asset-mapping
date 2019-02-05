@@ -37,14 +37,12 @@ token_ratio = am.token_ratio(blkh)
 print("Token ratio = "+str("%.8f" % token_ratio)+" at block "+str(blkh))
 print(" ")
 
-print("      Asset          Mass            Tokens          Locked   ")
-print("--------------------------------------------------------------")
+print("      Asset          Mass       Tokens Req.      Locked  ")
+print("---------------------------------------------------------")
 
-r_dict = r_obj.get_json()
-
-for asset in r_dict["assets"]:
+for asset in r_obj["assets"]:
     ref = asset["ref"]
-    lck = asset["locked"]
+    lck = asset["lock"]
     mass = map_obj.get_mass_assetid(ref)
     exptoken = mass/token_ratio
-    print(asset+"   "+str("%.3f" % mass)+"     "+str("%.8f" % exptoken)+"     "+str(lck))
+    print(ref+"   "+str("%.3f" % mass)+"     "+str("%.8f" % exptoken)+"     "+str(lck))
