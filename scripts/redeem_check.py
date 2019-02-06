@@ -11,7 +11,7 @@ import json
 print("Redemption transaction backend process")
 
 #address for the redemption fee and the required amount
-fAddress = "145GdSFkUusAr4K48W5JpPRnx1cn8C2iJE"
+fAddress = "12tkJYZGHAbMprRPGwHGKtVFPMydND9waZ"
 rfee = 0.002
 
 print("Load the mapping object - connecting to S3")
@@ -79,7 +79,7 @@ if locked:
     sys.exit()     
 
 print("Asset mass: "+str("%.3f" % rmass))
-exptoken = mass/token_ratio
+exptoken = rmass/token_ratio
 print("Required tokens: "+str("%.8f" % exptoken))
 print(" ")
 
@@ -91,7 +91,7 @@ with open('rfee.dat', 'r') as file:
 
 feetxcheck = ocean.call('testmempoolaccept',rfeetx)
 
-if feetxcheck["accept"] == 0:
+if feetxcheck["allowed"] == 0:
     print("Fee transaction invalid")
     print(feetxcheck["reject-reason"])
     print("Exit")
@@ -103,8 +103,9 @@ feedecode = ocean.call('decoderawtransaction',rfeetx)
 
 feetotal = 0.0
 for outs in feedecode["vout"]:
-    if outs["scriptPubKey"]["addresses"][0] == fAddress:
-        feetotal += outs["value"]
+    if outs["scriptPubKey"]["type"] == "pubkeyhash":
+        if outs["scriptPubKey"]["addresses"][0] == fAddress:
+            feetotal += outs["value"]
 
 if feetotal < rfee:
     print("Fee transaction total tokens: "+str(feetotal)+" is insufficient")
@@ -124,15 +125,15 @@ with open(filenam, 'r') as file:
 
 rtxcheck = ocean.call('testmempoolaccept',rtx)
 
-if rtxcheck["accept"] == 0:
+if rtxcheck["allowed"] == 0:
     print("Redemption transaction invalid")
     print(rtxcheck["reject-reason"])
     print("Exit")
     sys.exit()
 
-print("    Fee transaction valid")
+print("    Redemption transaction valid")
 
-rdecode = ocean.call('decoderawtransaction',rfeetx)
+rdecode = ocean.call('decoderawtransaction',rtx)
 
 frztag = 0
 tokentotal = 0.0
@@ -142,16 +143,17 @@ for outs in rdecode["vout"]:
         if outs["scriptPubKey"]["addresses"][0] == "1111111111111111111114oLvT2":
             frztag = 1
     else:
-        tokentotal += outs["value"]
-        addrs = outs["scriptPubKey"]["addresses"][0]
-        rAddresses.append(addrs)
+        if outs["scriptPubKey"]["type"] == "pubkeyhash":
+            tokentotal += outs["value"]
+            addrs = outs["scriptPubKey"]["addresses"][0]
+            rAddresses.append(addrs)
 
 if frztag == 0:
     print("Redemption transaction not freeze-tagged")
     print("Exit")
     sys.exit()
 
-if tokentotal < exptoken:
+if tokentotal < round(exptoken,8):
     print("Redemption transaction total tokens: "+str(feetotal)+" is insufficient")
     print("Exit")
     sys.exit()
@@ -169,13 +171,27 @@ for i in range(len(r_obj["assets"])):
         r_obj["assets"][i]["lock"] = True
 
 with open('rassets.json','w') as file:
-    json.dump(result,file)
+    json.dump(r_obj,file)
 
 #upload new partially signed objects
 s3.Object('cb-mapping','rassets.json').put(Body=open('rassets.json','rb'))
 
 print("Add redemption transaction addresses to the freezelist")
 print(" ")
+
+
+
+#create freezelist transaction
+
+#import the policy public key and private key
+
+#maintain wallet
+
+#send freezelist transaction
+
+#wait for confirmation
+
+
 
 ###########################################################################################
 # Freezlist wallet transaction with the redemption transaction output addresses (rAddresses) as metadata
@@ -190,8 +206,8 @@ for i in range(35):
 
 print("Submit fee and redemption transactions to network")
 
-ftxid = ocean.call('sendrawtransaction',rfeetx)
-rtxid = ocean.call('sendrawtransaction'rtx)
+#ftxid = ocean.call('sendrawtransaction',rfeetx)
+#rtxid = ocean.call('sendrawtransaction'rtx)
 
 ##########################################################
 # Notify custodian via email with ftxid and rtxid
