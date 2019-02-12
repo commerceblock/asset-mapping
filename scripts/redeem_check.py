@@ -14,6 +14,12 @@ print("Redemption transaction backend process")
 fAddress = "12tkJYZGHAbMprRPGwHGKtVFPMydND9waZ"
 rfee = 0.002
 
+#freezelist asset locking address and public key
+frzaddress = "1HPkc4to3GzVcEV8Le6sS4V5AXWQceH5kZ"
+frzpubkey = "03cbc2ac339a11a7244b0437826b51e99e46db07a4fda92d187831dea3d14fb4f0"
+
+frzlistasset = "179d5ab11a2e9c2188f372925d08585e981c2632b7e84250e94b9d48f09059f7"
+
 print("Load the mapping object - connecting to S3")
 s3 = boto3.resource('s3')
 s3.Bucket('cb-mapping').download_file('map.json','map.json')
@@ -138,7 +144,12 @@ rdecode = ocean.call('decoderawtransaction',rtx)
 frztag = 0
 tokentotal = 0.0
 rAddresses = []
+rAssets = []
 for outs in rdecode["vout"]:
+    if map_obj.get_mass_tokenid(outs["asset"]) < 0.1:
+        print("ERROR: redemption transaction contains an un-mapped token")
+        print("Exit")
+        sys.exit()
     if outs["n"] == 0:
         if outs["scriptPubKey"]["addresses"][0] == "1111111111111111111114oLvT2":
             frztag = 1
@@ -147,6 +158,9 @@ for outs in rdecode["vout"]:
             tokentotal += outs["value"]
             addrs = outs["scriptPubKey"]["addresses"][0]
             rAddresses.append(addrs)
+            outasset = outs["asset"]
+            rAssets.append(outasset)
+
 
 if frztag == 0:
     print("Redemption transaction not freeze-tagged")
@@ -179,35 +193,72 @@ s3.Object('cb-mapping','rassets.json').put(Body=open('rassets.json','rb'))
 print("Add redemption transaction addresses to the freezelist")
 print(" ")
 
+#the client wallet we connect to via RPC is expected to have the private keys to the policy asset outputs
 
+#get the freezelist output list
+with open("flo.dat",'r') as file:
+    utxolist = file.readlines()
+utxolist = [x.strip() for x in utxolist]
 
-#create freezelist transaction
+sent_frz = []
+inplcy = []
+invout = []
+#loop over output addresses
+for itr in range(len(rAddresses)):
+    txin = utxolist[itr+7].split()
+    inpts = []
+    inpt = {}
+    inpt["txid"] = txin[0]
+    inplcy.append(txin[0])
+    invout.append(txin[1])
+    inpt["vout"] = int(txin[1])
+    inpts.append(inpt)
+    otpts = []
+    otpt = {}
+    otpt["pubkey"] = frzpubkey
+    otpt["value"] = txin[2]
+    otpt["address"] = rAddresses[itr]
+    otpts.append(otpt)
+    freezetx = ocean.call('createrawpolicytx',inpts,otpts,0,frzlistasset)
+    freezetx_signed = ocean.call('signrawtransaction',freezetx)
+    freezetx_send = ocean.call('sendrawtransaction',freezetx_signed["hex"])
+    sent_frz.append(freezetx_send)
 
-#import the policy public key and private key
+#update policy output list
+with open("flo.dat",'w') as file:
+    for sline in utxolist:
+        line = sline.split()
+        for issit in range(len(sent_frz)):
+            replaced = False
+            if line[0] == inplcy[issit] and int(line[1]) == int(invout[issit]):
+                file.write(sent_frz[issit]+" "+"0"+" "+str(line[2])+"\n")
+                replaced = True
+                break
+        if not replaced:    
+            file.write(line[0]+" "+str(line[1])+" "+str(line[2])+"\n")
 
-#maintain wallet
+unconfirmed = True
+while unconfirmed:
+    print("Pause for on-chain confirmation")
+    for i in range(35):
+        sys.stdout.write('\r')
+        sys.stdout.write('.'*i)
+        sys.stdout.flush()
+        time.sleep(1)
 
-#send freezelist transaction
+    print(" ")
+    print("    Check policy transactins confirmed")
+    confs = 0
 
-#wait for confirmation
-
-
-
-###########################################################################################
-# Freezlist wallet transaction with the redemption transaction output addresses (rAddresses) as metadata
-###########################################################################################
-
-print("Pause for on-chain confirmation")
-for i in range(35):
-    sys.stdout.write('\r')
-    sys.stdout.write('.'*i)
-    sys.stdout.flush()
-    time.sleep(1)
+    for issit in range(len(sent_frz)):
+        gettx = ocean.call('getrawtransaction',sent_frz[issit],True)
+        if "confirmations" in gettx: confs += 1
+    if confs == len(sent_frz): unconfirmed = False
 
 print("Submit fee and redemption transactions to network")
 
-#ftxid = ocean.call('sendrawtransaction',rfeetx)
-#rtxid = ocean.call('sendrawtransaction'rtx)
+ftxid = ocean.call('sendrawtransaction',rfeetx)
+rtxid = ocean.call('sendrawtransaction',rtx)
 
 ##########################################################
 # Notify custodian via email with ftxid and rtxid
