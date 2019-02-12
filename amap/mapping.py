@@ -182,6 +182,10 @@ class MapDB(object):
         with open(filename) as file:
             self.map = json.load(file)
 
+    def init_json(self,injson):
+#load json object from input
+        self.map = injson
+
     def sign_db(self,privkey,index):
 #function to add a signature to the mapping object generated from the supplied key
         jsonstring = json.dumps(self.map["assets"],sort_keys=True)
