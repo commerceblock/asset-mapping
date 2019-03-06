@@ -104,21 +104,6 @@ class MapDB(object):
 #add a new asset to the object
 #a new entry number is determined
         maxasnum = 0
-        if len(asset_ref) != 6:
-            print("Error: asset reference should be a 6 digit string")
-            return 0
-        if len(year_ref) != 4:
-            print("Error: year should be a 4 digit string")
-            return 0
-        if mass > 450.0:
-            print("Error: mass too high")
-            return 0
-        if mass < 350.0:
-            print("Error: mass too low")
-            return 0
-        if len(tokenid) != 64:
-            print("Error: tokenID should be a 32 byte hex string")
-            return 0
         for i,j in self.map["assets"].items():
             if int(i) > maxasnum: maxasnum = int(i)
         ref = str(asset_ref)+'-'+str(year_ref)+'-'+str(manufacturer)
@@ -126,7 +111,7 @@ class MapDB(object):
         for i,j in self.map["assets"].items():
             if j["ref"] == ref:
                 print("Error: reference already used in mapping")
-                return 0
+                return False
 
         self.map["assets"][str(maxasnum+1)] = {}
         self.map["assets"][str(maxasnum+1)]["ref"] = ref

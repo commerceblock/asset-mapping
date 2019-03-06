@@ -153,7 +153,11 @@ print("Add new entries to mapping object:")
 print(" ")
 
 for issit in range(numiss):
-	map_obj.add_asset(assetRefList[issit],assetYearList[issit],assetMassList[issit],issuancetxList[issit]["asset"],assetManList[issit])
+	addret = map_obj.add_asset(assetRefList[issit],assetYearList[issit],assetMassList[issit],issuancetxList[issit]["asset"],assetManList[issit])
+	if addret == 0:
+		print("ERROR: add asset error")
+		print("Exiting ...")
+		sys.exit()
 
 tmass = map_obj.get_total_mass()
 print("     New total mass: "+str(tmass))

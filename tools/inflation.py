@@ -185,7 +185,7 @@ while client:
 						inreg[token] = {}
 						inreg[token]["frzlst"] = []
 
-					inreg[token]["entropy"] = reissuancetx["vin"][0]["issuance"]["entropy"]
+					inreg[token]["entropy"] = reissuancetx["vin"][0]["issuance"]["assetEntropy"]
 					inreg[token]["asset"] = reissuancetx["vin"][0]["issuance"]["asset"]
 					#if nothing in the register, add a new entry
 					inreg[token]["txid"] = unspent["txid"]

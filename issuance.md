@@ -1,6 +1,6 @@
 # asset-man: Token issuance protocol
 
-This document describes the proceedue for issuing a new mapped token on a controller-permissioned Ocean blockchain. It is assumed that the full initialisation process has been completed, as described in [initialisation.md](initialisation.md) and there are three controllers. Each controller has generated a secure and backed-up private key (stored on isolated hardware), and also has access to a workstation/PC that:
+This document describes the procedure for issuing a new mapped token on a controller-permissioned Ocean blockchain. It is assumed that the full initialisation process has been completed, as described in [initialisation.md](initialisation.md) and there are three controllers. Each controller has generated a secure and backed-up private key (stored on isolated hardware), and also has access to a workstation/PC that:
 
 1. Has a full internet connection 
 2. Has both Python3 and the `amap` library (and dependencies) installed 
