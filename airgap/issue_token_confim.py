@@ -239,11 +239,13 @@ while unconfirmed:
                     confs += 1
     if confs == numiss: unconfirmed = False
 
+signed_map_obj = am.MapDB(2,3)
+signed_map_obj.load_json('map_fs.json')
 print(" ")
 print("Asset on-chain issuance confirmed")
 print(" ")
 print("Check mapping signatures: ")
-if signed_map.verify_multisig(key_list):
+if signed_map_obj.verify_multisig(key_list):
     print("    Signatures verified")
 else:
     print("    Signature verification failed")
@@ -252,7 +254,7 @@ else:
 print(" ")
 
 print("Export fully signed mapping object")
-signed_map.export_json("map.json")
+signed_map_obj.export_json("map.json")
 #upload new map to S3
 s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')
 print(" ")

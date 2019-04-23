@@ -3,29 +3,20 @@
 import amap.mapping as am
 import bitcoin as bc
 import amap.rpchost as rpc
+from datetime import datetime
 import json
 import time
 import sys
+import os
 
 #controller number
-ncontrol = 1
+ncontrol = 2
 
-#version byte is 111 for testnet, 0 for mainnet
-version_byte = 111
-
-#the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "Xa4jPZTkSSe9SJ6BfEmE8NzNEPaPW849M8"
-
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
-url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
-
-print("Sign issuance transactions and mapping object")
+print("Sign mapping object")
 print(" ")
 
 map_obj = am.MapDB(2,3)
-map_obj.load_json('map.json')
+map_obj.load_json('map_us.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str("%.3f" % fmass))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
@@ -33,94 +24,20 @@ print("    Blockheight: "+str(map_obj.get_height()))
 
 print("Load the controller pubkeys")
 
-with open('keys/p2sh.json','r') as file:
+with open('key/p2sh.json','r') as file:
     p2sh = json.load(file)
 con_keys = am.ConPubKey()
-con_keys.load_json('keys/controllers.json')
+con_keys.load_json('key/controllers.json')
 key_list = con_keys.list_keys()
 print(" ")
 
-print("Load the partially signed transaction")
-with open('tx.json','r') as file:
-    partial_tx = json.load(file)
-
-print(" ")
-print("Connecting to Ocean client")
-print(" ")
-ocean = rpc.RPCHost(url)
-
-print(" ")
-print("Confirm token issuances:")
-print(" ")
-
-numiss = int(partial_tx["numiss"])
-for issit in range(numiss):
-    decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
-    txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
-    print("   transaction tokens = "+str("%.8f" % txTokenAmount))
-
-print(" ")
-inpt = input("Confirm token issuances correct? ")
-print(" ")
-if str(inpt) != "Yes":
-    print("Exit")
-    sys.exit()
-
-print(" ")
-print("Confirm addresses:")
-print(" ")
-
-for issit in range(numiss):
-    decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
-    print("    Issuance address: "+decode_tx["vout"][0]["scriptPubKey"]["addresses"][0])
-
-print(" ")
-inpt = input("Addresses correct? ")
-print(" ")
-if str(inpt) != "Yes":
-    print("Exit")
-    sys.exit()
-
-#hard-coded address for the block-signing script
-for issit in range(numiss):
-    decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
-    if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != reissuanceToken:
-        print("WARNING: re-issuance address is not the block-signing script")
-        inpt = input("Proceed? ")
-        print(" ")
-        if str(inpt) != "Yes":
-            print("Exit")
-            sys.exit()
-print(" ")
-
-print("Add partial signature to issuance transactions")
 privkey = open('key/privkey.dat','r').read()
-#encode private key to be importable to client
-pk_wif = bc.encode_privkey(privkey,'wif_compressed',version_byte)
-print(" ")
-
-fullSigTxList = []
-for issit in range(numiss):
-    full_sig_tx = ocean.call('signrawtransaction',partial_tx[str(issit)]["hex"],[{"txid":partial_tx[str(issit)]["txid"],"vout":int(partial_tx[str(issit)]["vout"]),"scriptPubKey":partial_tx[str(issit)]["scriptPubKey"],"redeemScript":p2sh["redeemScript"]}],[pk_wif])
-    if full_sig_tx["complete"]:
-        print("    Signatures complete and valid")
-        fullSigTxList.append(full_sig_tx)
-    else:
-        print("    Signatures not complete")
-        fullSigTxList.append(full_sig_tx)
-
-with open("tx.json",'w') as file:
-    json.dump(fullSigTxList,file)
 
 print(" ")
 print("Add signature to mapping object:")
 map_obj.sign_db(privkey,ncontrol)
 print(" ")
-print("Check signatures")
-if map_obj.verify_multisig(key_list):
-    print("    Signatures complete and valid")
-else:
-    print("    Signatures not complete")
-print(" ")
 
-map_obj.export_json("map.json")
+map_obj.export_json("map_fs.json")
+
+print("Fully signed mapping objects exported to map_fs.json in directory "+os.getcwd())
