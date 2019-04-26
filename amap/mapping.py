@@ -175,12 +175,11 @@ class MapDB(object):
 #the signature is generated over the asset list json object concatinated with the policy and time
         jsonstring = json.dumps(self.map["assets"],sort_keys=True)
         jsonstring += str(self.map["n"]) + str(self.map["m"]) + str(self.map["time"]) + str(self.map["height"])
-        strhash = bc.sha256(jsonstring)
         nvalid = 0
 #check all possible combinations of public keys and signatures
         for key in controller_pubkeys:
             for i,j in self.map["sigs"].items():
-                if bc.ecdsa_verify(strhash,j,key): nvalid += 1
+                if bc.ecdsa_verify(jsonstring,j,key): nvalid += 1
         if nvalid >= self.map["n"]:
             return True
         else:
@@ -206,7 +205,7 @@ class MapDB(object):
         jsonstring = json.dumps(self.map["assets"],sort_keys=True)
         jsonstring += str(self.map["n"]) + str(self.map["m"]) +str(self.map["time"]) + str(self.map["height"])
         strhash = bc.sha256(jsonstring)
-        sig = bc.ecdsa_sign(strhash,privkey)
+        sig = bc.ecdsa_sign(jsonstring,privkey)
         self.map["sigs"][index] = sig
 
     def clear_sigs(self):
