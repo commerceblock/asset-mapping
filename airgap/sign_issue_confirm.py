@@ -9,6 +9,12 @@ import sys
 import os
 from datetime import datetime
 
+#key file directory
+keydir = "/Users/ttrevethan/asset-mapping/confirmer/keys/"
+
+#object directory for import and export of json objects
+objdir = "/Users/ttrevethan/asset-mapping/confirmer/obj/"
+
 #controller number
 ncontrol = 2
 
@@ -27,7 +33,7 @@ print("Sign issuance transactions and mapping object")
 print(" ")
 
 map_obj = am.MapDB(2,3)
-map_obj.load_json('map_ps.json')
+map_obj.load_json(objdir+'map_ps.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str("%.3f" % fmass))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
@@ -35,15 +41,15 @@ print("    Blockheight: "+str(map_obj.get_height()))
 
 print("Load the controller pubkeys")
 
-with open('key/p2sh.json','r') as file:
+with open(keydir+'p2sh.json','r') as file:
     p2sh = json.load(file)
 con_keys = am.ConPubKey()
-con_keys.load_json('key/controllers.json')
+con_keys.load_json(keydir+'controllers.json')
 key_list = con_keys.list_keys()
 print(" ")
 
 print("Load the partially signed transaction")
-with open('tx_ps.json','r') as file:
+with open(objdir+'tx_ps.json','r') as file:
     partial_tx = json.load(file)
 
 print(" ")
@@ -95,7 +101,7 @@ for issit in range(numiss):
 print(" ")
 
 print("Add partial signature to issuance transactions")
-privkey = open('key/privkey.dat','r').read()
+privkey = open(keydir+'privkey.dat','r').read()
 #encode private key to be importable to client
 pk_wif = bc.encode_privkey(privkey,'wif_compressed',version_byte)
 print(" ")
@@ -113,7 +119,7 @@ for issit in range(numiss):
         print("    Signatures not complete")
         fSigTxList.append(full_sig_tx)
 
-with open("tx_fs.json",'w') as file:
+with open(objdir+"tx_fs.json",'w') as file:
     json.dump(fSigTxList,file)
 
 print(" ")
@@ -129,6 +135,6 @@ else:
     sys.exit()
 print(" ")
 
-map_obj.export_json("map_fs.json")
+map_obj.export_json(objdir+"map_fs.json")
 
-print("Fully signed objects exported to map_fs.json and tx_fs.json in directory "+os.getcwd())
+print("Fully signed objects exported to map_fs.json and tx_fs.json in directory "+objdir)

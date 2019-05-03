@@ -9,6 +9,12 @@ import time
 import sys
 import os
 
+#key file directory
+keydir = "/Users/ttrevethan/asset-mapping/confirmer/keys/"
+
+#object directory for import and export of json objects
+objdir = "/Users/ttrevethan/asset-mapping/confirmer/obj/"
+
 #controller number
 ncontrol = 2
 
@@ -16,7 +22,7 @@ print("Sign mapping object")
 print(" ")
 
 map_obj = am.MapDB(2,3)
-map_obj.load_json('map_us.json')
+map_obj.load_json(objdir+'map_us.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str("%.3f" % fmass))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
@@ -24,20 +30,20 @@ print("    Blockheight: "+str(map_obj.get_height()))
 
 print("Load the controller pubkeys")
 
-with open('key/p2sh.json','r') as file:
+with open(keydir+'p2sh.json','r') as file:
     p2sh = json.load(file)
 con_keys = am.ConPubKey()
-con_keys.load_json('key/controllers.json')
+con_keys.load_json(keydir+'controllers.json')
 key_list = con_keys.list_keys()
 print(" ")
 
-privkey = open('key/privkey.dat','r').read()
+privkey = open(keydir+'privkey.dat','r').read()
 
 print(" ")
 print("Add signature to mapping object:")
 map_obj.sign_db(privkey,ncontrol)
 print(" ")
 
-map_obj.export_json("map_fs.json")
+map_obj.export_json(objdir+"map_fs.json")
 
-print("Fully signed mapping objects exported to map_fs.json in directory "+os.getcwd())
+print("Fully signed mapping objects exported to map_fs.json in directory "+objdir)

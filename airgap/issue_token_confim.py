@@ -139,10 +139,10 @@ for issit in range(numiss):
             sys.exit()
 print(" ")
 
-print("Add confirmer signature (on airgapped signing device)")
+print("Add confirmer signature (on airgapped signing device) to exported files map_ps.json and tx_ps.json")
 print(" ")
 cwd = os.getcwd()
-inpt = input("Confirm transactions and mapping signed (and copied to "+cwd+" directory)? ")
+inpt = input("Confirm transactions and mapping signed (and copied to "+cwd+" directory as map_fs.json and tx_fs.json)? ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
