@@ -9,7 +9,7 @@ import boto3
 import sys
 
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
+reissuanceToken = "Xa4jPZTkSSe9SJ6BfEmE8NzNEPaPW849M8"
 
 print("Issue a new asset")
 
@@ -109,7 +109,7 @@ print("Determine token issuance at block height "+str(chaininfo["blocks"]))
 print(" ")
 bheight = int(chaininfo["blocks"]) 
 token_ratio = am.token_ratio(bheight)
-print("    token ratio = "+str("%.8f" % token_ratio))
+print("    token ratio = "+str("%.6f" % token_ratio))
 
 print(" ")
 tokenAmountList = []
@@ -117,7 +117,7 @@ print("Token issuances: ")
 for issit in range(numiss):
 	tokenAmount = assetMassList[issit]/token_ratio
 	assref = assetRefList[issit]+"-"+assetYearList[issit]+"-"+assetManList[issit]
-	print("    Asset: "+assref+"  tokens = "+str("%.8f" % tokenAmount))
+	print("    Asset: "+assref+"  tokens = "+str("%.6f" % tokenAmount))
 	tokenAmountList.append(tokenAmount)
 
 print(" ")
@@ -143,7 +143,7 @@ txinList = []
 for issit in range(numiss):
 	txin = utxolist[issit].split()
 	changeAmount = float(txin[2])
-	issuancetx = ocean.call('createrawissuance',issueToAddressList[issit],str("%.8f" % tokenAmountList[issit]),reissuanceToken,'1000',p2sh["address"],str("%.8f" % changeAmount),'1',txin[0],str(int(txin[1])))
+	issuancetx = ocean.call('createrawissuance',issueToAddressList[issit],str("%.6f" % tokenAmountList[issit]),reissuanceToken,'10000',p2sh["address"],str("%.6f" % changeAmount),'1',txin[0],str(int(txin[1])))
 	print("    New token ID: "+issuancetx["asset"])
 	issuancetxList.append(issuancetx)
 	txinList.append(txin)

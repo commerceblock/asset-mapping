@@ -161,7 +161,7 @@ issuancetxList = {}
 txinList = []
 for issit in range(numiss):
 	changeAmount = float(txin[issit][2])
-	issuancetx = ocean.call('createrawissuance',issueToAddressList[issit],str("%.8f" % tokenAmountList[issit]),reissuanceToken,'1000',p2sh["address"],str("%.8f" % changeAmount),'1',txin[issit][0],str(int(txin[issit][1])))
+	issuancetx = ocean.call('createrawissuance',issueToAddressList[issit],str("%.8f" % tokenAmountList[issit]),reissuanceToken,'10000',p2sh["address"],str("%.8f" % changeAmount),'1',txin[issit][0],str(int(txin[issit][1])))
 	print("    New token ID: "+issuancetx["asset"])
 	issuancetxList[str(issit)] = issuancetx
 	txinList.append(txin[issit])

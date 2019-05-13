@@ -36,19 +36,19 @@ def controller_recover_key(recovery_phrase):
 def token_ratio(blockheight):
 #function to return the token ratio at the supplied block height
 #The rate is the inflation rate (not the demmurage rate)
-    rate = 0.0101010101010101
+    rate = 0.010101010101010101
 #Hourly inflation rate
     hrate = (1.0 + rate)**(1.0/(365.0*24.0))
 #The zero ratio is the token ratio at time zero
-    zeroratio = 400.0
+    zeroratio = 0.1
 #calculate the number of hours based on the blockheight
     hours = blockheight // 60
-#calculate the token ratio iteratively based on intermediate rounding to 8 deciaml places
+#calculate the token ratio iteratively based on intermediate rounding to 6 deciaml places
     ratio = 1.0
     for it in range(hours):
-        ratio += round(ratio*hrate - ratio,8)
+        ratio += round(ratio*hrate - ratio,6)
     tr = zeroratio/ratio
-    return round(tr,8)
+    return round(tr,6)
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
@@ -255,9 +255,9 @@ class MapDB(object):
         for it in range(len(burnt_tokens)):
             total_tokens += burnt_tokens[it][1]
         
-        if round(total_tokens,8) < round(total_mass/tratio,8):
-            print("Total tokens: "+str("%.8f" % total_tokens))
-            print("Total converted mass: "+str(round(total_mass/tratio,8)))
+        if round(total_tokens,6) < round(total_mass/tratio,6):
+            print("Total tokens: "+str("%.6f" % total_tokens))
+            print("Total converted mass: "+str(round(total_mass/tratio,6)))
             print("Error: insufficient tokens for asset redemption ")
             return False
 

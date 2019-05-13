@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 #hard-coded federation blocksigning multisig address
-reissuanceToken = "1N2vis2xVUMpZYTxfHRbk4a8gFQFJ2ZiH9"
+reissuanceToken = "Xa4jPZTkSSe9SJ6BfEmE8NzNEPaPW849M8"
 
 print("Issue an new asset")
 print(" ")
@@ -94,7 +94,7 @@ print("Confirm token issuances:")
 print(" ")
 bheight = chaininfo["blocks"]
 token_ratio = am.token_ratio(bheight)
-print("    token ratio = "+str("%.8f" % token_ratio))
+print("    token ratio = "+str("%.6f" % token_ratio))
 print(" ")
 
 numiss = int(partial_tx["numiss"])
@@ -102,7 +102,7 @@ for issit in range(numiss):
     tokenAmount = float(partial_tx[str(issit)]["mass"])/token_ratio
     decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
     txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
-    print("    mass = "+str("%.3f" % partial_tx[str(issit)]["mass"])+"   expected tokens = "+str("%.8f" % tokenAmount)+"   transaction tokens = "+str("%.8f" % txTokenAmount))
+    print("    mass = "+str("%.3f" % partial_tx[str(issit)]["mass"])+"   expected tokens = "+str("%.6f" % tokenAmount)+"   transaction tokens = "+str("%.6f" % txTokenAmount))
 
 print(" ")
 inpt = input("Confirm token issuance correct? ")

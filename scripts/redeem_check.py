@@ -109,7 +109,7 @@ def redemption_check(rref,rfeetx,rtx):
     if frztag == 0:
         return False, "Transaction is not a redemption transaction"
 
-    if tokentotal < round(exptoken,8):
+    if tokentotal < round(exptoken,6):
         return False, "Redemption transaction total tokens: "+str(feetotal)+" is insufficient"
 
 
