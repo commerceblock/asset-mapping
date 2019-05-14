@@ -118,7 +118,7 @@ print("Determine token issuance at block height "+str(chaininfo["blocks"]))
 print(" ")
 bheight = int(chaininfo["blocks"]) 
 token_ratio = am.token_ratio(bheight)
-print("    token ratio = "+str("%.8f" % token_ratio))
+print("    token ratio = "+str("%.13f" % round(token_ratio,8)))
 
 print(" ")
 tokenAmountList = []
@@ -126,7 +126,7 @@ print("Token issuances: ")
 for issit in range(numiss):
 	tokenAmount = assetMassList[issit]/token_ratio
 	assref = assetRefList[issit]+"-"+assetYearList[issit]+"-"+assetManList[issit]
-	print("    Asset: "+assref+"  tokens = "+str("%.8f" % tokenAmount))
+	print("    Asset: "+assref+"  tokens = "+str("%.8f" % round(tokenAmount,8)))
 	tokenAmountList.append(tokenAmount)
 
 print(" ")
@@ -161,7 +161,7 @@ issuancetxList = {}
 txinList = []
 for issit in range(numiss):
 	changeAmount = float(txin[issit][2])
-	issuancetx = ocean.call('createrawissuance',issueToAddressList[issit],str("%.8f" % tokenAmountList[issit]),reissuanceToken,'10000',p2sh["address"],str("%.8f" % changeAmount),'1',txin[issit][0],str(int(txin[issit][1])))
+	issuancetx = ocean.call('createrawissuance',issueToAddressList[issit],str("%.8f" % round(tokenAmountList[issit],8)),reissuanceToken,'10000',p2sh["address"],str("%.8f" % changeAmount),'1',txin[issit][0],str(int(txin[issit][1])))
 	print("    New token ID: "+issuancetx["asset"])
 	issuancetxList[str(issit)] = issuancetx
 	txinList.append(txin[issit])

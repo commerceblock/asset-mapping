@@ -78,8 +78,8 @@ blkh = int(inpt)
 
 token_ratio = am.token_ratio(blkh)
 tokenAmount = assetMass/token_ratio
-print("    Token ratio: "+str("%.6f" % token_ratio)+" at block height "+str(blkh))
-print("    Required total tokens: "+str("%.6f" % (assetMass/token_ratio)))
+print("    Token ratio: "+str("%.13f" % token_ratio)+" at block height "+str(blkh))
+print("    Required total tokens: "+str("%.8f" % round(assetMass/token_ratio,8)))
 print(" ")
 inpt = input("Enter total number of burnt token types: ")
 ntokens = int(inpt)

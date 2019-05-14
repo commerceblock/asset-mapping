@@ -109,7 +109,7 @@ print("Determine token issuance at block height "+str(chaininfo["blocks"]))
 print(" ")
 bheight = int(chaininfo["blocks"]) 
 token_ratio = am.token_ratio(bheight)
-print("    token ratio = "+str("%.8f" % token_ratio))
+print("    token ratio = "+str("%.13f" % token_ratio))
 
 print(" ")
 tokenAmountList = []

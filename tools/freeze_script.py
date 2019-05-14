@@ -37,8 +37,8 @@ print(" ")
 token_ratio = am.token_ratio(bheight)
 tokenAmount = assetMass/token_ratio
 
-print("    Token ratio = "+str("%.8f" % token_ratio))
-print("    Tokens required = "+str("%.8f" % tokenAmount))
+print("    Token ratio = "+str("%.13f" % token_ratio))
+print("    Tokens required = "+str("%.8f" % round(tokenAmount,8)))
 print(" ")
 
 changeAddress = ocean.call('getnewaddress')
@@ -55,7 +55,7 @@ suf = False
 #find tokens to burn
 unspentlist = ocean.call('listunspent')
 for unspent in unspentlist:
-	if unspent["amount"] < 9.9:
+	if unspent["amount"] < 9999.0:
 		if unspent["amount"] >= tokenamnt:
 			amount_list.append(tokenamnt)
 			token_list.append(unspent["asset"])
@@ -93,7 +93,7 @@ assetpairs = {}
 for it in range(len(amount_list)):
 	tempAddress = ocean.call('getnewaddress')
 	if it == len(amount_list)-1:
-		outputs[tempAddress] = round(float(amount_list[it] + 2*fee),8)
+		outputs[tempAddress] = round(float(amount_list[it]),8)
 	else:
 		outputs[tempAddress] = round(float(amount_list[it]),8)
 	assetpairs[tempAddress] = token_list[it]
@@ -103,7 +103,7 @@ for it in range(len(amount_list)):
 	inputs.append(outpoint)
 
 outputs["fee"] = fee
-outputs[changeAddress] = round(change_amount - 3*fee,8)
+outputs[changeAddress] = round(change_amount - fee,8)
 assetpairs[changeAddress] = change_asset
 assetpairs["fee"] = change_asset
 
@@ -131,8 +131,6 @@ for it in range(len(amount_list)):
 	inputs.append(outpoint)
 
 print(" ")
-outputs["fee"] = fee
-assetpairs["fee"] = change_asset
 
 freezetx = ocean.call('createrawtransaction',inputs,outputs,0,assetpairs)
 freezetxsigned = ocean.call('signrawtransaction',freezetx)
