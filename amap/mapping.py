@@ -46,9 +46,9 @@ def token_ratio(blockheight):
 #calculate the token ratio iteratively based on intermediate rounding to 6 deciaml places
     ratio = 1.0
     for it in range(hours):
-        ratio += round(ratio*hrate - ratio,6)
+        ratio += round(ratio*hrate - ratio,8)
     tr = zeroratio/ratio
-    return round(tr,6)
+    return round(tr,8)
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
@@ -255,9 +255,9 @@ class MapDB(object):
         for it in range(len(burnt_tokens)):
             total_tokens += burnt_tokens[it][1]
         
-        if round(total_tokens,6) < round(total_mass/tratio,6):
-            print("Total tokens: "+str("%.6f" % total_tokens))
-            print("Total converted mass: "+str(round(total_mass/tratio,6)))
+        if round(total_tokens,8) < round(total_mass/tratio,8):
+            print("Total tokens: "+str("%.8f" % total_tokens))
+            print("Total converted mass: "+str(round(total_mass/tratio,8)))
             print("Error: insufficient tokens for asset redemption ")
             return False
 

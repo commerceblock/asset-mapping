@@ -58,7 +58,7 @@ for entry in utxorep:
     if inmap and amount < 999.0:
         exptoken = mass/token_ratio
         print(asset+"   "+str("%.3f" % mass)+"     "+str("%.6f" % exptoken)+"         "+str("%.6f" % amount))
-    elif amount < 999.0:
+    elif amount < 9999.0:
         excluded = []
         excluded.append(asset)
         excluded.append(amount)
