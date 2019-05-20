@@ -11,14 +11,15 @@ import json
 print("Redemption transaction backend process")
 
 #address for the redemption fee and the required amount
-fAddress = "12tkJYZGHAbMprRPGwHGKtVFPMydND9waZ"
-rfee = 0.002
+fAddress = "2djv4Z8uMPrHTQDQb8SD23HQw5ZYV8FP4Vo"
+rfee = 5.0
 
 #freezelist asset locking address and public key
-frzaddress = "1HPkc4to3GzVcEV8Le6sS4V5AXWQceH5kZ"
-frzpubkey = "03cbc2ac339a11a7244b0437826b51e99e46db07a4fda92d187831dea3d14fb4f0"
+frzaddress = "2djv4Z8uMPrHTQDQb8SD23HQw5ZYV8FP4Vo"
+frzpubkey = "02fcf2003147ba14b15c7bdacf85b8a714922a1023d96cf145536c4a326d9a7fb3"
+frzlistprivkey = "KxbwNMSSpzmnRqc9MKMqpWwiEbNr12UPZydNPKu45LEssG6qpC2Y"
 
-frzlistasset = "179d5ab11a2e9c2188f372925d08585e981c2632b7e84250e94b9d48f09059f7"
+frzlistasset = "b689510578dd34a6d1625e9df34b8fc3a8b80437cf55ece6bc620fd65a64550c"
 
 print("Load the mapping object - connecting to S3")
 s3 = boto3.resource('s3')
@@ -58,6 +59,7 @@ blkh = int(chaininfo["blocks"])
 token_ratio = am.token_ratio(blkh)
 print("Token ratio = "+str("%.8f" % token_ratio)+" at block "+str(blkh))
 print(" ")
+imprtk = chaininfo = ocean.call('importprivkey',frzlistprivkey)
 
 rref = input("Enter redeemed asset reference: ")
 print(" ")
@@ -151,7 +153,7 @@ for outs in rdecode["vout"]:
         print("Exit")
         sys.exit()
     if outs["n"] == 0:
-        if outs["scriptPubKey"]["addresses"][0] == "1111111111111111111114oLvT2":
+        if outs["scriptPubKey"]["addresses"][0] == "2dZRkPX3hrPtuBrmMkbGtxTxsuYYgAaFrXZ":
             frztag = 1
     else:
         if outs["scriptPubKey"]["type"] == "pubkeyhash":
@@ -167,7 +169,7 @@ if frztag == 0:
     print("Exit")
     sys.exit()
 
-if tokentotal < round(exptoken,8):
+if tokentotal < round(exptoken,6):
     print("Redemption transaction total tokens: "+str(feetotal)+" is insufficient")
     print("Exit")
     sys.exit()

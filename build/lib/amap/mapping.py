@@ -36,19 +36,19 @@ def controller_recover_key(recovery_phrase):
 def token_ratio(blockheight):
 #function to return the token ratio at the supplied block height
 #The rate is the inflation rate (not the demmurage rate)
-    rate = 0.0101010101010101
+    rate = 0.010101010101010101
 #Hourly inflation rate
     hrate = (1.0 + rate)**(1.0/(365.0*24.0))
 #The zero ratio is the token ratio at time zero
-    zeroratio = 400.0
+    zeroratio = 0.1
 #calculate the number of hours based on the blockheight
     hours = blockheight // 60
-#calculate the token ratio iteratively based on intermediate rounding to 8 deciaml places
+#calculate the token ratio iteratively based on intermediate rounding to 6 deciaml places
     ratio = 1.0
     for it in range(hours):
-        ratio += round(ratio*hrate - ratio,8)
+        ratio += round(ratio*hrate - ratio,12)
     tr = zeroratio/ratio
-    return round(tr,8)
+    return round(tr,13)
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys
@@ -104,6 +104,21 @@ class MapDB(object):
 #add a new asset to the object
 #a new entry number is determined
         maxasnum = 0
+        if len(asset_ref) != 6:
+            print("Error: asset reference should be a 6 digit string")
+            return 0
+        if len(year_ref) != 4:
+            print("Error: year should be a 4 digit string")
+            return 0
+        if mass > 450.0:
+            print("Error: mass too high")
+            return 0
+        if mass < 350.0:
+            print("Error: mass too low")
+            return 0
+        if len(tokenid) != 64:
+            print("Error: tokenID should be a 32 byte hex string")
+            return 0
         for i,j in self.map["assets"].items():
             if int(i) > maxasnum: maxasnum = int(i)
         ref = str(asset_ref)+'-'+str(year_ref)+'-'+str(manufacturer)
@@ -111,7 +126,7 @@ class MapDB(object):
         for i,j in self.map["assets"].items():
             if j["ref"] == ref:
                 print("Error: reference already used in mapping")
-                return False
+                return 0
 
         self.map["assets"][str(maxasnum+1)] = {}
         self.map["assets"][str(maxasnum+1)]["ref"] = ref
@@ -160,12 +175,11 @@ class MapDB(object):
 #the signature is generated over the asset list json object concatinated with the policy and time
         jsonstring = json.dumps(self.map["assets"],sort_keys=True)
         jsonstring += str(self.map["n"]) + str(self.map["m"]) + str(self.map["time"]) + str(self.map["height"])
-        strhash = bc.sha256(jsonstring)
         nvalid = 0
 #check all possible combinations of public keys and signatures
         for key in controller_pubkeys:
             for i,j in self.map["sigs"].items():
-                if bc.ecdsa_verify(strhash,j,key): nvalid += 1
+                if bc.ecdsa_verify(jsonstring,j,key): nvalid += 1
         if nvalid >= self.map["n"]:
             return True
         else:
@@ -191,7 +205,7 @@ class MapDB(object):
         jsonstring = json.dumps(self.map["assets"],sort_keys=True)
         jsonstring += str(self.map["n"]) + str(self.map["m"]) +str(self.map["time"]) + str(self.map["height"])
         strhash = bc.sha256(jsonstring)
-        sig = bc.ecdsa_sign(strhash,privkey)
+        sig = bc.ecdsa_sign(jsonstring,privkey)
         self.map["sigs"][index] = sig
 
     def clear_sigs(self):

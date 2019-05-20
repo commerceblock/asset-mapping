@@ -7,6 +7,7 @@ import amap.rpchost as rpc
 import json
 import sys
 import requests
+import boto3
 
 # Connecting to Ocean client
 rpcport = 18884
@@ -20,6 +21,8 @@ ocean = rpc.RPCHost(url)
 def get_available_assets():
 	#Load the mapping object
     req = requests.get('https://s3.eu-west-2.amazonaws.com/cb-mapping/map.json')
+    s3 = boto3.resource('s3')
+    s3.Bucket('cb-mapping').download_file('rassets.json','rassets.json')
 
     map_obj = am.MapDB(2,3)
     map_obj.init_json(req.json())
@@ -69,4 +72,7 @@ print("Assets available for redemption: ")
 print(" ")
 for asset in available:
 	print(asset)
+
+reissue_count = 60 - int(bheight) % 60
+print("This token amount is valid for the next "+str(reissue_count)+" blocks (minutes)")
 

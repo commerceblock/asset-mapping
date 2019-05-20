@@ -21,7 +21,7 @@ def redemption_check(rref,rfeetx,rtx):
 
     # hard-coded address for the redemption fee and the required amount
     fAddress = "12tkJYZGHAbMprRPGwHGKtVFPMydND9waZ"
-    rfee = 0.002
+    rfee = 5.0
 
     #Load the mapping object - connecting to S3
     req = requests.get('https://s3.eu-west-2.amazonaws.com/cb-mapping/map.json')
@@ -36,6 +36,9 @@ def redemption_check(rref,rfeetx,rtx):
 
     if not map_obj.verify_multisig(key_list):
         return False,"Signature verification failed"
+
+    s3 = boto3.resource('s3')
+    s3.Bucket('cb-mapping').download_file('rassets.json','rassets.json')
 
     # Load the redeem list object - rassets.json
     with open('rassets.json') as file:
@@ -96,7 +99,7 @@ def redemption_check(rref,rfeetx,rtx):
         if map_obj.get_mass_tokenid(outs["asset"]) < 0.1:
             return False, "ERROR: redemption transaction contains an un-mapped token"
         if outs["n"] == 0:
-            if outs["scriptPubKey"]["addresses"][0] == "1111111111111111111114oLvT2":
+            if outs["scriptPubKey"]["addresses"][0] == "2dZRkPX3hrPtuBrmMkbGtxTxsuYYgAaFrXZ":
                 frztag = 1
         else:
             if outs["scriptPubKey"]["type"] == "pubkeyhash":

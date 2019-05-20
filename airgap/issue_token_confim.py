@@ -103,7 +103,7 @@ for issit in range(numiss):
     tokenAmount = float(partial_tx[str(issit)]["mass"])/token_ratio
     decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
     txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
-    print("    mass = "+str("%.3f" % partial_tx[str(issit)]["mass"])+"   expected tokens = "+str("%.8f" % round(tokenAmount))+"   transaction tokens = "+str("%.8f" % txTokenAmount))
+    print("    mass = "+str("%.3f" % partial_tx[str(issit)]["mass"])+"   expected tokens = "+str("%.8f" % round(tokenAmount,8))+"   transaction tokens = "+str("%.8f" % txTokenAmount))
 
 print(" ")
 inpt = input("Confirm token issuance correct? ")
@@ -186,6 +186,16 @@ if str(inpt) != "Yes":
     sys.exit()
 print(" ")
 
+signed_map_obj = am.MapDB(2,3)
+signed_map_obj.load_json('map_fs.json')
+print("Check mapping signatures: ")
+if signed_map_obj.verify_multisig(key_list):
+    print("    Signatures verified")
+else:
+    print("    Signature verification failed")
+    print("    ERROR: exit")
+    sys.exit()
+
 print(" ")
 inpt = input("Confirm send transactions? ")
 print(" ")
@@ -239,18 +249,8 @@ while unconfirmed:
                     confs += 1
     if confs == numiss: unconfirmed = False
 
-signed_map_obj = am.MapDB(2,3)
-signed_map_obj.load_json('map_fs.json')
 print(" ")
 print("Asset on-chain issuance confirmed")
-print(" ")
-print("Check mapping signatures: ")
-if signed_map_obj.verify_multisig(key_list):
-    print("    Signatures verified")
-else:
-    print("    Signature verification failed")
-    print("    ERROR: exit")
-    sys.exit()
 print(" ")
 
 print("Export fully signed mapping object")
