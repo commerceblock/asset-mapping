@@ -8,11 +8,7 @@ import boto3
 import sys
 import json
 
-print("Redemption transaction backend process")
-
-#address for the redemption fee and the required amount
-fAddress = "2djv4Z8uMPrHTQDQb8SD23HQw5ZYV8FP4Vo"
-rfee = 5.0
+print("Redemption transaction processing")
 
 #freezelist asset locking address and public key
 frzaddress = "2djv4Z8uMPrHTQDQb8SD23HQw5ZYV8FP4Vo"
@@ -57,9 +53,8 @@ ocean = rpc.RPCHost(url)
 chaininfo = ocean.call('getblockchaininfo')
 blkh = int(chaininfo["blocks"])
 token_ratio = am.token_ratio(blkh)
-print("Token ratio = "+str("%.8f" % token_ratio)+" at block "+str(blkh))
+print("Token ratio = "+str("%.11f" % token_ratio)+" at block "+str(blkh))
 print(" ")
-imprtk = chaininfo = ocean.call('importprivkey',frzlistprivkey)
 
 rref = input("Enter redeemed asset reference: ")
 print(" ")
@@ -89,39 +84,6 @@ if locked:
 print("Asset mass: "+str("%.3f" % rmass))
 exptoken = rmass/token_ratio
 print("Required tokens: "+str("%.8f" % exptoken))
-print(" ")
-
-print("Read in redemption fee transaction")
-print(" ")
-
-with open('rfee.dat', 'r') as file:
-    rfeetx = file.read()
-
-feetxcheck = ocean.call('testmempoolaccept',rfeetx)
-
-if feetxcheck["allowed"] == 0:
-    print("Fee transaction invalid")
-    print(feetxcheck["reject-reason"])
-    print("Exit")
-    sys.exit()
-
-print("    Fee transaction valid")
-
-feedecode = ocean.call('decoderawtransaction',rfeetx)
-
-feetotal = 0.0
-for outs in feedecode["vout"]:
-    if outs["scriptPubKey"]["type"] == "pubkeyhash":
-        if outs["scriptPubKey"]["addresses"][0] == fAddress:
-            feetotal += outs["value"]
-
-if feetotal < rfee:
-    print("Fee transaction total tokens: "+str(feetotal)+" is insufficient")
-    print("Exit")
-    sys.exit()
-
-print(" ")
-print("    Fee transaction has sufficient tokens")
 print(" ")
 
 print("Read in redemption (freeze) transaction")
@@ -197,22 +159,33 @@ print(" ")
 
 #the client wallet we connect to via RPC is expected to have the private keys to the policy asset outputs
 
-#get the freezelist output list
-with open("flo.dat",'r') as file:
-    utxolist = file.readlines()
-utxolist = [x.strip() for x in utxolist]
+#the UTXO database lists unspent policy asset outputs that can be used for issuance
+#check if policyasset address is already in wallet
+inwallet = ocean.call('getaccount',frzaddress)
+if not inwallet == "freezeasset":
+    ocean.call('importprivkey',frzlistprivkey,"freezeasset",True)
+
+paunspent = ocean.call('listunspent')
+
+txinlst = []
+for output in paunspent:
+    if output["address"] == frzaddress:
+        utxo = []
+        utxo.append(output["txid"])
+        utxo.append(output["vout"])
+        utxo.append(output["amount"])
+        txinlst.append(utxo)
+
+print(" ")
+print("Policy asset UTXOs found: "+str(len(txin)))
 
 sent_frz = []
-inplcy = []
-invout = []
 #loop over output addresses
 for itr in range(len(rAddresses)):
-    txin = utxolist[itr+7].split()
+    txin = txinlst[itr]
     inpts = []
     inpt = {}
     inpt["txid"] = txin[0]
-    inplcy.append(txin[0])
-    invout.append(txin[1])
     inpt["vout"] = int(txin[1])
     inpts.append(inpt)
     otpts = []
@@ -226,18 +199,10 @@ for itr in range(len(rAddresses)):
     freezetx_send = ocean.call('sendrawtransaction',freezetx_signed["hex"])
     sent_frz.append(freezetx_send)
 
-#update policy output list
-with open("flo.dat",'w') as file:
-    for sline in utxolist:
-        line = sline.split()
-        for issit in range(len(sent_frz)):
-            replaced = False
-            if line[0] == inplcy[issit] and int(line[1]) == int(invout[issit]):
-                file.write(sent_frz[issit]+" "+"0"+" "+str(line[2])+"\n")
-                replaced = True
-                break
-        if not replaced:    
-            file.write(line[0]+" "+str(line[1])+" "+str(line[2])+"\n")
+print("Sent "+str(len(sent_frz))+" freezelist txs: ")
+for snttx in sent_frz:
+    print("    "+str(snttx))
+print(" ")
 
 unconfirmed = True
 while unconfirmed:
@@ -259,9 +224,7 @@ while unconfirmed:
 
 print("Submit fee and redemption transactions to network")
 
-ftxid = ocean.call('sendrawtransaction',rfeetx)
 rtxid = ocean.call('sendrawtransaction',rtx)
 
-##########################################################
-# Notify custodian via email with ftxid and rtxid
-##########################################################
+print(" ")
+print("Redemption transaction TXID = "+str(rtxid))
