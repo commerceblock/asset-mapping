@@ -89,11 +89,11 @@ print(" ")
 print("Read in redemption (freeze) transaction")
 print(" ")
 
-filenam = "rtx-"+rref+".dat"
+filenam = rref+".txn"
 with open(filenam, 'r') as file:
     rtx = file.read()
 
-rtxcheck = ocean.call('testmempoolaccept',rtx)
+rtxcheck = ocean.call('testmempoolaccept',rtx["hex"])
 
 if rtxcheck["allowed"] == 0:
     print("Redemption transaction invalid")
@@ -103,7 +103,7 @@ if rtxcheck["allowed"] == 0:
 
 print("    Redemption transaction valid")
 
-rdecode = ocean.call('decoderawtransaction',rtx)
+rdecode = ocean.call('decoderawtransaction',rtx["hex"])
 
 frztag = 0
 tokentotal = 0.0
@@ -224,7 +224,7 @@ while unconfirmed:
 
 print("Submit fee and redemption transactions to network")
 
-rtxid = ocean.call('sendrawtransaction',rtx)
+rtxid = ocean.call('sendrawtransaction',rtx["hex"])
 
 print(" ")
 print("Redemption transaction TXID = "+str(rtxid))
