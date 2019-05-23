@@ -10,10 +10,10 @@ import sys
 import os
 
 #key file directory
-keydir = "/Users/ttrevethan/asset-mapping/coordinator/keys/"
+keydir = os.getenv('KEYDIR', default="/Users/ttrevethan/asset-mapping/coordinator/keys/")
 
 #object directory for import and export of json objects
-objdir = "/Users/ttrevethan/asset-mapping/coordinator/obj/"
+objdir = os.getenv('OBJDIR', default="/Users/ttrevethan/asset-mapping/coordinator/obj/")
 
 #controller number
 ncontrol = 1
