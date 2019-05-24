@@ -91,7 +91,7 @@ print(" ")
 
 filenam = rref+".txn"
 with open(filenam, 'r') as file:
-    rtx = file.read()
+    rtx = json.load(file)
 
 rtxcheck = ocean.call('testmempoolaccept',rtx["hex"])
 
@@ -177,7 +177,7 @@ for output in paunspent:
         txinlst.append(utxo)
 
 print(" ")
-print("Policy asset UTXOs found: "+str(len(txin)))
+print("Policy asset UTXOs found: "+str(len(txinlst)))
 
 sent_frz = []
 #loop over output addresses

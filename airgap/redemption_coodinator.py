@@ -7,6 +7,7 @@ import time
 import boto3
 import sys
 import json
+import os
 
 print("Redemption of tokens for a specified asset")
 
@@ -72,15 +73,25 @@ if assetMass != map_obj.get_mass_assetid(rref):
     print("Exit")
     sys.exit()
 
-inpt = input("Enter the redemption block height: ")
+inpt = input("Enter the block height redemption initiated: ")
 print(" ")
 blkh = int(inpt)
 
-token_ratio = am.token_ratio(blkh)
-tokenAmount = round(assetMass/token_ratio,8)
-print("    Token ratio: "+str("%.8f" % token_ratio)+" at block height "+str(blkh))
-print("    Required total tokens: "+str("%.8f" % round(assetMass/token_ratio,8)))
+red_token_ratio = am.token_ratio(blkh)
+tokenAmount = round(assetMass/red_token_ratio,8)
+print("    Token ratio: "+str("%.13f" % red_token_ratio)+" at block height "+str(blkh))
+print("    Required total tokens: "+str("%.8f" % round(assetMass/red_token_ratio,8)))
 print(" ")
+
+
+chaininfo = ocean.call('getblockchaininfo')
+
+print("    Current blockheight: "+str(chaininfo["blocks"]))
+token_ratio = am.token_ratio(int(chaininfo["blocks"]))
+print("    Current token ratio = "+str("%.13f" % token_ratio))
+
+print(" ")
+
 inpt = input("Enter total number of burnt token types: ")
 ntokens = int(inpt)
 if ntokens < 1:
@@ -116,11 +127,11 @@ for btoken in burnt_tokens:
             print("    TokenID: "+str(asset))
             print("        Map mass = "+str(btoken[2]))
             print("        Chain mass = "+str("%.3f" % (amount*token_ratio)))
-            print("        Redemption mass = "+str("%.3f" % (btoken[1]*token_ratio)))
-            diffr = btoken[2]-amount*token_ratio-btoken[1]*token_ratio
+            print("        Redemption mass = "+str("%.3f" % (btoken[1]*red_token_ratio)))
+            diffr = btoken[2]-amount*token_ratio-btoken[1]*red_token_ratio
             print("        Difference = "+str("%.3f" % diffr))
             print(" ")
-            if diffr < -0.0000001:
+            if diffr < -0.00001:
                 print("ERROR: Excess tokens on chain - check burn")
                 print("Exit")
                 sys.exit()

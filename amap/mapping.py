@@ -262,7 +262,7 @@ class MapDB(object):
             return False
 
         redemption_tolerance = 0.000001
-        if total_tokens > tratio + redemption_tolerance:
+        if total_tokens > round(total_mass/tratio,8) + redemption_tolerance:
             print("Error: excess tokens for redemption")
             return False
 
@@ -330,7 +330,7 @@ class MapDB(object):
             if cntr == 0:
                 self.map["assets"][str(maxasnum+1)] = {}
                 self.map["assets"][str(maxasnum+1)]["ref"] = entry[1]
-                self.map["assets"][str(maxasnum+1)]["mass"] = entry[2]
+                self.map["assets"][str(maxasnum+1)]["mass"] = round(entry[2],3)
                 self.map["assets"][str(maxasnum+1)]["tokenid"] = entry[0]
 
 #remove the redeemed asset from the object
