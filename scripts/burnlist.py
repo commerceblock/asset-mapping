@@ -14,7 +14,7 @@ print(" ")
 #burnlist asset locking address and public key
 brnaddress = "2dscqGd9G5TkbARL2pKB2P9miTNLqEsCcYR"
 brnpubkey = "03d507845c9469d242751bd93be62e6fc6e24284e77ea4182d5879b2403ddd77b0"
-brnlistprivkey = "xxxxxxxxxxxxxxxxxxxxxx"
+brnlistprivkey = "cSCMZ6nc5AgLpf2PamDon3xDznTfJNHKZTKei34AA9w5nh1Zte5a"
 
 brnlistasset = "2d3c8502cb7e3450c46b3128490bb5999466cea2323b4aca0c9c65348df4555d"
 

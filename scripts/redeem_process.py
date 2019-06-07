@@ -83,7 +83,7 @@ if locked:
 
 print("Asset mass: "+str("%.3f" % rmass))
 exptoken = rmass/token_ratio
-print("Required tokens: "+str("%.8f" % exptoken))
+print("Required tokens: "+str("%.8f" % round(exptoken,8)))
 print(" ")
 
 print("Read in redemption (freeze) transaction")
@@ -131,8 +131,8 @@ if frztag == 0:
     print("Exit")
     sys.exit()
 
-if tokentotal < round(exptoken,6):
-    print("Redemption transaction total tokens: "+str(tokentotal)+" is insufficient")
+if int(round(tokentotal,8)*100000000) != int(round(exptoken,8)*100000000):
+    print("Redemption transaction total tokens: "+str(tokentotal)+" is incorrect for current period")
     print("Exit")
     sys.exit()
 
@@ -222,7 +222,7 @@ while unconfirmed:
         if "confirmations" in gettx: confs += 1
     if confs == len(sent_frz): unconfirmed = False
 
-print("Submit fee and redemption transactions to network")
+print("Submit redemption transaction to network")
 
 rtxid = ocean.call('sendrawtransaction',rtx["hex"])
 
