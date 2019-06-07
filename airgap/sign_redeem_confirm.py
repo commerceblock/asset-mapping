@@ -22,7 +22,7 @@ print("Sign mapping object")
 print(" ")
 
 map_obj = am.MapDB(2,3)
-map_obj.load_json(objdir+'map_us.json')
+map_obj.load_json(objdir+'map_ps.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str("%.3f" % fmass))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")

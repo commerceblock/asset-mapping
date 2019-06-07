@@ -10,7 +10,7 @@ import sys
 import os
 
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "3QQWTxbajpCpBxL7wsSvBbwJB5YMiAKJPs"
+reissuanceToken = "Xa4jPZTkSSe9SJ6BfEmE8NzNEPaPW849M8"
 
 print("Issue a new asset")
 
@@ -34,7 +34,12 @@ key_list = con_keys.list_keys()
 if map_obj.verify_multisig(key_list):
     print("    Signatures verified")
 else:
-    print("    Verification failed")
+	if round(fmass,3) > 0.0:
+    	print("    Verification failed - invalid or missing signatures")
+    	print("Exit")
+    	sys.exit()
+    else:
+    	print("    Mapping object empty")
 print(" ")
 
 print("Load the P2SH address file")

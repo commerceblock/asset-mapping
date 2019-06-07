@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 #hard-coded federation blocksigning multisig address
-reissuanceToken = "3QQWTxbajpCpBxL7wsSvBbwJB5YMiAKJPs"
+reissuanceToken = "Xa4jPZTkSSe9SJ6BfEmE8NzNEPaPW849M8"
 
 print("Issue an new asset")
 print(" ")
@@ -34,7 +34,12 @@ key_list = con_keys.list_keys()
 if map_obj.verify_multisig(key_list):
     print("    Signatures verified")
 else:
-    print("    Signature verification failed")
+    if round(fmass,3) > 0.0:
+        print("    Verification failed - invalid or missing signatures")
+        print("Exit")
+        sys.exit()
+    else:
+        print("    Mapping object empty")
 print(" ")
 
 print("Fetch the partially signed objects")

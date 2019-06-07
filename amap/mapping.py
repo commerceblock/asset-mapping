@@ -9,6 +9,7 @@ import calendar
 import codecs
 from datetime import datetime
 from datadiff import diff
+import math
 
 def controller_keygen():
 #function to generate a random mnemonic recovery phrase
@@ -40,13 +41,13 @@ def token_ratio(blockheight):
 #Hourly inflation rate
     hrate = (1.0 + rate)**(1.0/(365.0*24.0))
 #The zero ratio is the token ratio at time zero
-    zeroratio = 0.1
+    zeroratio = 400.0
 #calculate the number of hours based on the blockheight
     hours = blockheight // 60
 #calculate the token ratio iteratively based on intermediate rounding to 6 deciaml places
-    ratio = 1.0
+    ratio = 4000.0
     for it in range(hours):
-        ratio += round(ratio*hrate - ratio,12)
+        ratio += round((ratio*hrate - ratio),8)
     tr = zeroratio/ratio
     return round(tr,13)
 

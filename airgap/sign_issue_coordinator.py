@@ -22,7 +22,7 @@ ncontrol = 1
 version_byte = 111
 
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "3QQWTxbajpCpBxL7wsSvBbwJB5YMiAKJPs"
+reissuanceToken = "Xa4jPZTkSSe9SJ6BfEmE8NzNEPaPW849M8"
 
 rpcport = 18884
 rpcuser = 'user1'

@@ -40,13 +40,13 @@ def token_ratio(blockheight):
 #Hourly inflation rate
     hrate = (1.0 + rate)**(1.0/(365.0*24.0))
 #The zero ratio is the token ratio at time zero
-    zeroratio = 0.1
+    zeroratio = 400.0
 #calculate the number of hours based on the blockheight
     hours = blockheight // 60
 #calculate the token ratio iteratively based on intermediate rounding to 6 deciaml places
-    ratio = 1.0
+    ratio = 4000.0
     for it in range(hours):
-        ratio += round(ratio*hrate - ratio,12)
+        ratio += round((ratio*hrate - ratio),8)
     tr = zeroratio/ratio
     return round(tr,13)
 
@@ -261,8 +261,8 @@ class MapDB(object):
             print("Error: insufficient tokens for asset redemption ")
             return False
 
-        redemption_tolerance = 0.000001
-        if total_tokens > tratio + redemption_tolerance:
+        redemption_tolerance = 0.0000001
+        if total_tokens > round(total_mass/tratio,8) + redemption_tolerance:
             print("Error: excess tokens for redemption")
             return False
 
@@ -325,12 +325,12 @@ class MapDB(object):
                     if cntr >= 1:
                         print("Error: repeated asset-token mapping in object")
                         return False
-                    j["mass"] += entry[2]
+                    j["mass"] += round(entry[2],9)
                     cntr += 1
             if cntr == 0:
                 self.map["assets"][str(maxasnum+1)] = {}
                 self.map["assets"][str(maxasnum+1)]["ref"] = entry[1]
-                self.map["assets"][str(maxasnum+1)]["mass"] = entry[2]
+                self.map["assets"][str(maxasnum+1)]["mass"] = round(entry[2],9)
                 self.map["assets"][str(maxasnum+1)]["tokenid"] = entry[0]
 
 #remove the redeemed asset from the object

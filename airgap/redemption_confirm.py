@@ -92,7 +92,7 @@ print("Redemption of asset: "+rref)
 print(" ")
 
 if assetMass != map_obj.get_mass_assetid(rref):
-    print("ERROR: total mass of asset "+rref+" in object = "+str("%.3f" % map_obj.get_mass_assetid(rref)))
+    print("ERROR: total mass of asset "+rref+" in object = "+str("%.8f" % map_obj.get_mass_assetid(rref)))
     print("Exit")
     sys.exit()
 
@@ -102,7 +102,7 @@ print(" ")
 
 token_ratio = am.token_ratio(blkh)
 tokenAmount = assetMass/token_ratio
-print("    Token ratio: "+str("%.12f" % token_ratio)+" at height "+str(blkh))
+print("    Token ratio: "+str("%.13f" % token_ratio)+" at height "+str(blkh))
 print("    Required total tokens: "+str("%.8f" % round(assetMass/token_ratio,8)))
 print(" ")
 inpt = input("Enter total number of burnt token types: ")
@@ -140,12 +140,12 @@ for btoken in burnt_tokens:
             amount = entry["amountspendable"] + entry["amountfrozen"]
             print("    TokenID: "+str(asset))
             print("        Map mass = "+str(btoken[2]))
-            print("        Chain mass = "+str("%.3f" % (amount*token_ratio)))
-            print("        Redemption mass = "+str("%.3f" % (btoken[1]*token_ratio)))
+            print("        Chain mass = "+str("%.5f" % (amount*token_ratio)))
+            print("        Redemption mass = "+str("%.5f" % (btoken[1]*token_ratio)))
             diffr = btoken[2]-amount*token_ratio-btoken[1]*token_ratio
-            print("        Difference = "+str("%.3f" % diffr))
+            print("        Difference = "+str("%.5f" % diffr))
             print(" ")
-            if diffr < -0.0000001:
+            if diffr < -0.000001:
                 print("ERROR: Excess tokens on chain - check burn")
                 print("Exit")
                 sys.exit()

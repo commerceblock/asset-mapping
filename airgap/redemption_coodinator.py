@@ -90,6 +90,8 @@ print("    Current blockheight: "+str(chaininfo["blocks"]))
 token_ratio = am.token_ratio(int(chaininfo["blocks"]))
 print("    Current token ratio = "+str("%.13f" % token_ratio))
 
+nblkh = chaininfo["blocks"]
+
 print(" ")
 
 inpt = input("Enter total number of burnt token types: ")
@@ -126,10 +128,10 @@ for btoken in burnt_tokens:
             amount = entry["amountspendable"] + entry["amountfrozen"]
             print("    TokenID: "+str(asset))
             print("        Map mass = "+str(btoken[2]))
-            print("        Chain mass = "+str("%.3f" % (amount*token_ratio)))
-            print("        Redemption mass = "+str("%.3f" % (btoken[1]*red_token_ratio)))
+            print("        Chain mass = "+str("%.5f" % (amount*token_ratio)))
+            print("        Redemption mass = "+str("%.5f" % (btoken[1]*red_token_ratio)))
             diffr = btoken[2]-amount*token_ratio-btoken[1]*red_token_ratio
-            print("        Difference = "+str("%.3f" % diffr))
+            print("        Difference = "+str("%.5f" % diffr))
             print(" ")
             if diffr < -0.00001:
                 print("ERROR: Excess tokens on chain - check burn")
@@ -160,7 +162,7 @@ if str(inpt) != "Yes":
 print("Add signatures (on airgapped signing device):")
 map_obj.clear_sigs()
 map_obj.update_time()
-map_obj.update_height(blkh)
+map_obj.update_height(nblkh)
 print(" ")
 print("Export partially signed object (to directory "+os.getcwd()+")")
 print(" ")

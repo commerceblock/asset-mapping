@@ -132,7 +132,7 @@ if frztag == 0:
     sys.exit()
 
 if tokentotal < round(exptoken,6):
-    print("Redemption transaction total tokens: "+str(feetotal)+" is insufficient")
+    print("Redemption transaction total tokens: "+str(tokentotal)+" is insufficient")
     print("Exit")
     sys.exit()
 
