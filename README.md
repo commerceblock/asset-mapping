@@ -17,7 +17,7 @@ In addition to Python 3.* the following libraries are required:
 
 ## Installation
 
-To install the core mapping library
+To install the core mapping library 
 
 `$ git clone https://github.com/commerceblock/asset-mapping`
 
