@@ -196,7 +196,7 @@ print("Export partially signed data objects (to directory "+os.getcwd()+")")
 print(" ")
 print("     map_us.json")
 print("     tx_us.json")
-map_obj.export_json("map_us.json")
+map_obj.export_json("/Volumes/DGLD-SIGN/map_us.json")
 
 #add the input transaction data to the tx file to enable the second signature to be generated
 for issit in range(numiss):
@@ -207,7 +207,7 @@ for issit in range(numiss):
 
 issuancetxList["numiss"] = numiss
 
-with open("tx_us.json",'w') as file:
+with open("/Volumes/DGLD-SIGN/tx_us.json",'w') as file:
     json.dump(issuancetxList,file)
 
 inpt = input("Confirm transactions and mapping signed? ")
@@ -217,8 +217,8 @@ if str(inpt) != "Yes":
 print(" ")
 
 #upload new partially signed objects 
-s3.Object('cb-mapping','tx_ps.json').put(Body=open('tx_ps.json','rb'))
-s3.Object('cb-mapping','map_ps.json').put(Body=open('map_ps.json','rb'))
+s3.Object('cb-mapping','/Volumes/DGLD-SIGN/tx_ps.json').put(Body=open('/Volumes/DGLD-SIGN/tx_ps.json','rb'))
+s3.Object('cb-mapping','/Volumes/DGLD-SIGN/map_ps.json').put(Body=open('/Volumes/DGLD-SIGN/map_ps.json','rb'))
 
 chaininfo = ocean.call('getblockchaininfo')
 bheight = 60 - int(chaininfo["blocks"]) % 60
