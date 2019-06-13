@@ -28,18 +28,27 @@ fmass = map_obj.get_total_mass()
 print("    Total mass: "+str(round(fmass,3)))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
 print("    Blockheight: "+str(map_obj.get_height()))
+
+print(" ")
+inpt = input("Confirm mapping mass and timestamp corresponds to last known change? ")
+print(" ")
+if str(inpt) != "Yes":
+    print("Exit")
+    sys.exit()
+print(" ")
+
 con_keys = am.ConPubKey()
 con_keys.load_json('controllers.json')
 key_list = con_keys.list_keys()
 if map_obj.verify_multisig(key_list):
     print("    Signatures verified")
 else:
-	if round(fmass,3) > 0.0:
-    	print("    Verification failed - invalid or missing signatures")
-    	print("Exit")
-    	sys.exit()
+    if round(fmass,3) > 0.0:
+        print("    Verification failed - invalid or missing signatures")
+        print("Exit")
+        sys.exit()
     else:
-    	print("    Mapping object empty")
+        print("    Mapping object empty")
 print(" ")
 
 print("Load the P2SH address file")
@@ -61,7 +70,15 @@ bestblockhash = chaininfo["bestblockhash"]
 bestblock = ocean.call('getblock',bestblockhash)
 print("    Current blockheight: "+str(chaininfo["blocks"]))
 print("    Block time: "+str(bestblock["time"])+" ("+datetime.fromtimestamp(bestblock["time"]).strftime('%c')+")")
+print("    System time: "+str(datetime.now().timestamp())+" ("+datetime.now().strftime('%c')+")")
 print(" ")
+
+if datetime.now().timestamp() > float(bestblock["time"]) + 100.0:
+    print("ERROR: best block time more than 1 minute in the past")
+    print("Check syncronisation of system clock, then contact system admin")
+    print("Exit")
+    sys.exit()
+
 reissue_count = 60 - int(chaininfo["blocks"]) % 60
 print("This issuance must be completed within the next "+str(reissue_count)+" blocks (minutes)")
 inpt = input("Proceed? ")

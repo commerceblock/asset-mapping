@@ -18,7 +18,7 @@ print(" ")
 print("Load the current mapping object - connecting to S3")
 s3 = boto3.resource('s3')
 s3.Bucket('cb-mapping').download_file('map.json','map.json')
-s3.Bucket('cb-mapping').download_file('ps1_map.json','ps1_map.json')
+s3.Bucket('cb-mapping').download_file('ps_map.json','ps_map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
@@ -36,7 +36,7 @@ print(" ")
 
 print("Load the updated mapping object from file")
 new_map_obj = am.MapDB(2,3)
-new_map_obj.load_json('ps1_map.json')
+new_map_obj.load_json('ps_map.json')
 nmass = new_map_obj.get_total_mass()
 print("    Mass difference: "+str("%.3f" % (nmass-fmass)))
 print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
@@ -145,7 +145,7 @@ for btoken in burnt_tokens:
             diffr = btoken[2]-amount*token_ratio-btoken[1]*token_ratio
             print("        Difference = "+str("%.5f" % diffr))
             print(" ")
-            if diffr < -0.001:
+            if diffr < -0.0000001:
                 print("ERROR: Excess tokens on chain - check burn")
                 print("Exit")
                 sys.exit()

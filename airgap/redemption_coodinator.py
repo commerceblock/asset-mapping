@@ -133,7 +133,7 @@ for btoken in burnt_tokens:
             diffr = btoken[2]-amount*token_ratio-btoken[1]*red_token_ratio
             print("        Difference = "+str("%.9f" % diffr))
             print(" ")
-            if diffr < -0.00000001:
+            if diffr < -0.0000001:
                 print("ERROR: Excess tokens on chain - check burn")
                 print("Exit")
                 sys.exit()
@@ -178,5 +178,5 @@ print(" ")
 print("Upload artially signed mapping object to cloud")
 
 #upload new partially signed objects
-s3.Object('cb-mapping','ps1_map.json').put(Body=open('map_us.json','rb'))
+s3.Object('cb-mapping','ps_map.json').put(Body=open('map_ps.json','rb'))
 print("Contact confirmer to complete the redemption authentication")

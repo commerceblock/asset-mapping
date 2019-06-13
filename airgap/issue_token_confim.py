@@ -42,6 +42,14 @@ else:
         print("    Mapping object empty")
 print(" ")
 
+print(" ")
+inpt = input("Confirm mapping mass and timestamp corresponds to last known change? ")
+print(" ")
+if str(inpt) != "Yes":
+    print("Exit")
+    sys.exit()
+print(" ")
+
 print("Fetch the partially signed objects")
 s3.Bucket('cb-mapping').download_file('map_ps.json','map_ps.json')
 s3.Bucket('cb-mapping').download_file('tx_ps.json','tx_ps.json')
@@ -94,6 +102,14 @@ bestblockhash = chaininfo["bestblockhash"]
 bestblock = ocean.call('getblock',bestblockhash)
 print("    Current blockheight: "+str(chaininfo["blocks"]))
 print("    Block time: "+str(bestblock["time"])+" ("+datetime.fromtimestamp(bestblock["time"]).strftime('%c')+")")
+print("    System time: "+str(datetime.now().timestamp())+" ("+datetime.now().strftime('%c')+")")
+print(" ")
+
+if datetime.now().timestamp() > float(bestblock["time"]) + 100.0:
+    print("ERROR: best block time more than 1 minute in the past")
+    print("Check syncronisation of system clock, then contact system admin")
+    print("Exit")
+    sys.exit()
 
 print(" ")
 print("Confirm token issuances:")
@@ -109,6 +125,12 @@ for issit in range(numiss):
     decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
     txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
     print("    mass = "+str("%.3f" % partial_tx[str(issit)]["mass"])+"   expected tokens = "+str("%.8f" % round(tokenAmount,8))+"   transaction tokens = "+str("%.8f" % txTokenAmount))
+
+if round(tokenAmount,8) != round(txTokenAmount,8):
+    print("ERROR: Issuance amount in transaction is incorrect")
+    print("Contact coordinator and re-start the issuance")
+    print("Exit")
+    sys.exit()
 
 print(" ")
 inpt = input("Confirm token issuance correct? ")
@@ -208,18 +230,18 @@ if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
-submitok = False
-while not submitok:
-    #check it is not a reissuance block - if it is wait a minute
-    bbhash = ocean.call('getbestblockhash')
-    bestblock = ocean.call('getblockheader',bbhash)
-    blockheight = int(bestblock["height"])
-    if blockheight%60 == 0:
-        print("pause for next block")
-        print(" ")
-        time.sleep(60)
-    else:
-        submitok = True
+chaininfo = ocean.call('getblockchaininfo')
+blkh = int(chaininfo["blocks"])
+objbh = new_map_obj.get_height()
+if blkh // 60 != objbh // 60:
+    print("Inflation period expired: restart issuance process")
+    print("Exit")
+    sys.exit()
+reissue_count = 60 - blkh % 60
+if reissue_count < 3:
+    print("Insufficient time for confirmation: restart issuance process")
+    print("Exit")
+    sys.exit()
 
 print("Submit transactions to Ocean network")
 print(" ")
@@ -230,7 +252,7 @@ for issit in range(numiss):
     print(" ")
 
 unconfirmed = True
-while unconfirmed:
+for count in range(8):
     print("Pause for on-chain confirmation")
     for i in range(35):
         sys.stdout.write('\r')
@@ -252,7 +274,18 @@ while unconfirmed:
                 if entry["amountspendable"] == decode_full["vin"][0]["issuance"]["assetamount"]:
                     asset_conf = True
                     confs += 1
-    if confs == numiss: unconfirmed = False
+    if confs == numiss: 
+        unconfirmed = False
+        break
+
+if unconfirmed:
+    print("ERROR: Tokens not correctly created on chain")
+    print("Check the status of the above TxIDs")
+    print("Contact CommerceBlock for recovery assistance")
+    print("DO NOT REISSUE THE ASSET OR PERFORM ADDITIONAL ISSUANCES")
+    print("DO NOT DELETE ANY FILES IN THIS DIRECTORY")
+    print("Exit")
+    sys.exit()
 
 print(" ")
 print("Asset on-chain issuance confirmed")
