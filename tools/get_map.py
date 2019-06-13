@@ -40,3 +40,7 @@ if map_obj.verify_multisig(key_list):
 else:
     print("    Verification failed")
 print(" ")
+
+print("Export asset map as CSV file: map.csv")
+
+map_obj.export_csv("map.csv")

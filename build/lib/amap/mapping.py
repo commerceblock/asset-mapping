@@ -7,8 +7,10 @@ import binascii
 import json
 import calendar
 import codecs
+import csv
 from datetime import datetime
 from datadiff import diff
+import math
 
 def controller_keygen():
 #function to generate a random mnemonic recovery phrase
@@ -212,6 +214,13 @@ class MapDB(object):
         self.map["sigs"].pop("1", None)
         self.map["sigs"].pop("2", None)
         self.map["sigs"].pop("3", None)
+
+    def export_csv(self,filename):
+#function to save json object to file
+        with open(filename,'w') as file:
+            file.write("ref,mass,tokenid\n")
+            for i,j in self.map["assets"].items():
+                file.write(j["ref"]+","+str(j["mass"])+","+j["tokenid"]+"\n")
 
     def export_json(self,filename):
 #function to save json object to file
