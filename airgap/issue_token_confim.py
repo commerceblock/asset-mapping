@@ -43,14 +43,14 @@ else:
 print(" ")
 
 print("Fetch the partially signed objects")
-s3.Bucket('cb-mapping').download_file('map_ps.json','map_ps.json')
-s3.Bucket('cb-mapping').download_file('tx_ps.json','tx_ps.json')
+s3.Bucket('cb-mapping').download_file('/Volumes/DGLD-SIGN/map_ps.json','map_ps.json')
+s3.Bucket('cb-mapping').download_file('/Volumes/DGLD-SIGN/tx_ps.json','tx_ps.json')
 print(" ")
 
 print("Load the updated mapping object")
 print(" ")
 new_map_obj = am.MapDB(2,3)
-new_map_obj.load_json('map_ps.json')
+new_map_obj.load_json('/Volumes/DGLD-SIGN/map_ps.json')
 nmass = new_map_obj.get_total_mass()
 print("    Mass difference: "+str("%.3f" % (nmass-fmass)))
 print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
