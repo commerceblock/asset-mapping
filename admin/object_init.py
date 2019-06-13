@@ -17,6 +17,3 @@ map_obj.export_json('map.json')
 print("Upload to S3")
 s3 = boto3.resource('s3')
 s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'))
-
-#upload new list to S3
-s3.Object('cb-mapping','ptxo.dat').put(Body=open('ptxo.dat','rb'))

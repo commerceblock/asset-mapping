@@ -145,7 +145,7 @@ for btoken in burnt_tokens:
             diffr = btoken[2]-amount*token_ratio-btoken[1]*token_ratio
             print("        Difference = "+str("%.5f" % diffr))
             print(" ")
-            if diffr < -0.000001:
+            if diffr < -0.001:
                 print("ERROR: Excess tokens on chain - check burn")
                 print("Exit")
                 sys.exit()

@@ -128,12 +128,12 @@ for btoken in burnt_tokens:
             amount = entry["amountspendable"] + entry["amountfrozen"]
             print("    TokenID: "+str(asset))
             print("        Map mass = "+str(btoken[2]))
-            print("        Chain mass = "+str("%.5f" % (amount*token_ratio)))
-            print("        Redemption mass = "+str("%.5f" % (btoken[1]*red_token_ratio)))
+            print("        Chain mass = "+str("%.9f" % (amount*token_ratio)))
+            print("        Redemption mass = "+str("%.9f" % (btoken[1]*red_token_ratio)))
             diffr = btoken[2]-amount*token_ratio-btoken[1]*red_token_ratio
-            print("        Difference = "+str("%.5f" % diffr))
+            print("        Difference = "+str("%.9f" % diffr))
             print(" ")
-            if diffr < -0.00001:
+            if diffr < -0.00000001:
                 print("ERROR: Excess tokens on chain - check burn")
                 print("Exit")
                 sys.exit()
