@@ -294,6 +294,6 @@ print(" ")
 print("Export fully signed mapping object")
 signed_map_obj.export_json("map.json")
 #upload new map to S3
-s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')
+s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read',ContentType='application/json')
 print(" ")
 print("Issuance complete and verified")

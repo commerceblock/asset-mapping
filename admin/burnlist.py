@@ -8,6 +8,16 @@ import boto3
 import sys
 import json
 
+testnet = True
+
+#version byte is 111 for testnet, 0 for mainnet
+if testnet:
+    version_byte = 111
+    addr_byte = 235
+else:
+    version_byte = 0
+    addr_byte = 0
+
 print("burnlist control wallet")
 print(" ")
 

@@ -8,14 +8,23 @@ import boto3
 import sys
 import json
 
+testnet = True
+
+#version byte is 111 for testnet, 0 for mainnet
+if testnet:
+    version_byte = 111
+    addr_byte = 235
+else:
+    version_byte = 0
+    addr_byte = 0
+
 print("Redemption transaction processing")
 
-#freezelist asset locking address and public key
-frzaddress = "2djv4Z8uMPrHTQDQb8SD23HQw5ZYV8FP4Vo"
-frzpubkey = "02fcf2003147ba14b15c7bdacf85b8a714922a1023d96cf145536c4a326d9a7fb3"
-frzlistprivkey = "KxbwNMSSpzmnRqc9MKMqpWwiEbNr12UPZydNPKu45LEssG6qpC2Y"
-
-frzlistasset = "b689510578dd34a6d1625e9df34b8fc3a8b80437cf55ece6bc620fd65a64550c"
+privkey = open('frzlist_privkey.dat','r').read()
+frzlistprivkey = bc.encode_privkey(privkey,'wif_compressed',version_byte)
+frzpubkey_uc = bc.privkey_to_pubkey(privkey)
+frzpubkey = bc.compress(frzpubkey_uc)
+frzaddress = bc.pubkey_to_address(frzpubkey,addr_byte)
 
 print("Load the mapping object - connecting to S3")
 s3 = boto3.resource('s3')
@@ -54,6 +63,15 @@ chaininfo = ocean.call('getblockchaininfo')
 blkh = int(chaininfo["blocks"])
 token_ratio = am.token_ratio(blkh)
 print("Token ratio = "+str("%.11f" % token_ratio)+" at block "+str(blkh))
+print(" ")
+
+reissue_count = 60 - int(chaininfo["blocks"]) % 60
+print("This redemption transaction must be confirmed within the next "+str(reissue_count)+" blocks (minutes)")
+inpt = input("Proceed? ")
+print(" ")
+if str(inpt) != "Yes":
+    print("Exit")
+    sys.exit()
 print(" ")
 
 rref = input("Enter redeemed asset reference: ")
@@ -167,6 +185,8 @@ if not inwallet == "freezeasset":
 
 paunspent = ocean.call('listunspent')
 
+freezeasset = paunspent[0]["asset"]
+
 txinlst = []
 for output in paunspent:
     if output["address"] == frzaddress:
@@ -222,9 +242,41 @@ while unconfirmed:
         if "confirmations" in gettx: confs += 1
     if confs == len(sent_frz): unconfirmed = False
 
+chaininfo = ocean.call('getblockchaininfo')
+blkh2 = int(chaininfo["blocks"])
+objbh = new_map_obj.get_height()
+if blkh2 // 60 != blkh // 60:
+    print("Inflation period expired: restart issuance process")
+    print("Exit")
+    sys.exit()
+reissue_count = 60 - blkh2 % 60
+if reissue_count < 3:
+    print("Insufficient time for confirmation this period: new redemption amount required")
+    print("Exit")
+    sys.exit()
+
 print("Submit redemption transaction to network")
 
 rtxid = ocean.call('sendrawtransaction',rtx["hex"])
 
 print(" ")
 print("Redemption transaction TXID = "+str(rtxid))
+
+unconfirmed = True
+while unconfirmed:
+    print("Pause for on-chain confirmation")
+    for i in range(35):
+        sys.stdout.write('\r')
+        sys.stdout.write('.'*i)
+        sys.stdout.flush()
+        time.sleep(1)
+
+    print(" ")
+    print("    Check redemption transaction confirmed")
+    confs = 0
+
+    gettx = ocean.call('getrawtransaction',rtxid,True)
+    if "confirmations" in gettx: unconfirmed = False
+
+print("Redemption transaction confirmed and outputs frozen")
+print("COMPLETE")

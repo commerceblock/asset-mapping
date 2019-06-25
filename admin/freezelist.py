@@ -8,15 +8,24 @@ import boto3
 import sys
 import json
 
+testnet = True
+
+#version byte is 111 for testnet, 0 for mainnet
+if testnet:
+    version_byte = 111
+    addr_byte = 235
+else:
+    version_byte = 0
+    addr_byte = 0
+
 print("Freezelist control wallet")
 print(" ")
 
-#freezelist asset locking address and public key
-frzaddress = "2djv4Z8uMPrHTQDQb8SD23HQw5ZYV8FP4Vo"
-frzpubkey = "02fcf2003147ba14b15c7bdacf85b8a714922a1023d96cf145536c4a326d9a7fb3"
-frzlistprivkey = "xxxxxxxxxxxxxxxxxx"
-
-frzlistasset = "b689510578dd34a6d1625e9df34b8fc3a8b80437cf55ece6bc620fd65a64550c"
+privkey = open('frzlist_privkey.dat','r').read()
+frzlistprivkey = bc.encode_privkey(privkey,'wif_compressed',version_byte)
+frzpubkey_uc = bc.privkey_to_pubkey(privkey)
+frzpubkey = bc.compress(frzpubkey_uc)
+frzaddress = bc.pubkey_to_address(frzpubkey,addr_byte)
 
 print("Connecting to Ocean client")
 print(" ")
@@ -39,6 +48,8 @@ if not inwallet == "freezeasset":
     ocean.call('importprivkey',frzlistprivkey,"freezeasset",True)
 
 paunspent = ocean.call('listunspent')
+
+freezeasset = paunspent[0]["asset"]
 
 txinlst = []
 for output in paunspent:
