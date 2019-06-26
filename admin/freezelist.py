@@ -8,15 +8,15 @@ import boto3
 import sys
 import json
 
-testnet = True
+testnet = False
 
 #version byte is 111 for testnet, 0 for mainnet
 if testnet:
     version_byte = 111
     addr_byte = 235
 else:
-    version_byte = 0
-    addr_byte = 0
+    version_byte = 52
+    addr_byte = 38
 
 print("Freezelist control wallet")
 print(" ")
@@ -49,7 +49,7 @@ if not inwallet == "freezeasset":
 
 paunspent = ocean.call('listunspent')
 
-freezeasset = paunspent[0]["asset"]
+frzlistasset = paunspent[0]["asset"]
 
 txinlst = []
 for output in paunspent:

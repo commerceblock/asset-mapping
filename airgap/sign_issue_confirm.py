@@ -19,10 +19,10 @@ objdir = os.getenv('OBJDIR', default="/Users/ttrevethan/asset-mapping/confirmer/
 ncontrol = 2
 
 #version byte is 111 for testnet, 0 for mainnet
-version_byte = 111
+version_byte = 52
 
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "Xa4jPZTkSSe9SJ6BfEmE8NzNEPaPW849M8"
+reissuanceToken = "gRW13x264QqRRqA6CU6Eo8yg5VF9AfhkfG"
 
 rpcport = 18884
 rpcuser = 'user1'

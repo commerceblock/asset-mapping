@@ -15,18 +15,17 @@ if testnet:
     version_byte = 111
     addr_byte = 235
 else:
-    version_byte = 0
-    addr_byte = 0
+    version_byte = 52
+    addr_byte = 38
 
 print("burnlist control wallet")
 print(" ")
 
-#burnlist asset locking address and public key
-brnaddress = "2dscqGd9G5TkbARL2pKB2P9miTNLqEsCcYR"
-brnpubkey = "03d507845c9469d242751bd93be62e6fc6e24284e77ea4182d5879b2403ddd77b0"
-brnlistprivkey = "cSCMZ6nc5AgLpf2PamDon3xDznTfJNHKZTKei34AA9w5nh1Zte5a"
-
-brnlistasset = "2d3c8502cb7e3450c46b3128490bb5999466cea2323b4aca0c9c65348df4555d"
+privkey = open('brnlist_privkey.dat','r').read()
+brnlistprivkey = bc.encode_privkey(privkey,'wif_compressed',version_byte)
+brnpubkey_uc = bc.privkey_to_pubkey(privkey)
+brnpubkey = bc.compress(brnpubkey_uc)
+brnaddress = bc.pubkey_to_address(brnpubkey,addr_byte)
 
 print("Connecting to Ocean client")
 print(" ")
@@ -49,6 +48,8 @@ if not inwallet == "burnasset":
     ocean.call('importprivkey',brnlistprivkey,"burnasset",True)
 
 paunspent = ocean.call('listunspent')
+
+brnlistasset = paunspent[0]["asset"]
 
 txinlst = []
 for output in paunspent:
