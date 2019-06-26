@@ -8,6 +8,7 @@ import time
 import boto3
 import sys
 import json
+import os
 
 print("Redemption of tokens for a specified asset")
 
