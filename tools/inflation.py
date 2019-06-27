@@ -21,7 +21,7 @@ fedAddress = "18j5iek2k1Aw7LDEZpopGuir9hpeM1q7yS"
 arate = 0.0101010101010101
 #inflation interval (in blocks)
 #60 blocks is 1 hour (at 1 block per minute)
-interval = 5
+interval = 60
 
 print("Connecting to Ocean client")
 print(" ")
