@@ -227,15 +227,39 @@ issuancetxList["numiss"] = numiss
 with open("tx_us.json",'w') as file:
     json.dump(issuancetxList,file)
 
+try:
+    os.remove('tx_ps.json')
+except OSError:
+    pass
+
+try:
+    os.remove('map_ps.json')
+except OSError:
+    pass
+
 inpt = input("Confirm transactions and mapping signed? ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 print(" ")
 
-#upload new partially signed objects 
-s3.Object('cb-mapping','tx_ps.json').put(Body=open('tx_ps.json','rb'))
-s3.Object('cb-mapping','map_ps.json').put(Body=open('map_ps.json','rb'))
+nfound = 0
+for count in range(4):
+	try:
+		#upload new partially signed objects 
+		s3.Object('cb-mapping','tx_ps.json').put(Body=open('tx_ps.json','rb'))
+		s3.Object('cb-mapping','map_ps.json').put(Body=open('map_ps.json','rb'))
+	except:
+		inpt = input("ERROR: files not found. Check they have been copied correctly? ")
+		if str(inpt) != "Yes":
+    		print("Exit")
+    		sys.exit()
+		nfound += 1
+
+if nfound > 3:
+	print("ERROR: files not found, exiting.")
+    print("Exit")
+    sys.exit()
 
 chaininfo = ocean.call('getblockchaininfo')
 bheight = 60 - int(chaininfo["blocks"]) % 60

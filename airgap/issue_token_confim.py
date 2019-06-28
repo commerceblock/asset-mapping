@@ -166,6 +166,16 @@ for issit in range(numiss):
             sys.exit()
 print(" ")
 
+try:
+    os.remove('tx_fs.json')
+except OSError:
+    pass
+
+try:
+    os.remove('map_fs.json')
+except OSError:
+    pass
+
 print("Add confirmer signature (on airgapped signing device) to exported files map_ps.json and tx_ps.json")
 print(" ")
 cwd = os.getcwd()
@@ -174,6 +184,24 @@ if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 print(" ")
+
+try:
+    open('tx_fs.json','r').read()
+    open('map_fs.json','r').read()
+except:
+    inpt = input("ERROR: files not found. Check they have been copied correctly? ")
+    if str(inpt) != "Yes":
+        print("Exit")
+        sys.exit()
+
+try:
+    open('tx_fs.json','r').read()
+    open('map_fs.json','r').read()
+except:
+    print("ERROR: files not found. ")
+    print("Exit")
+    sys.exit()
+
 
 print("Load the fully signed transaction")
 with open('tx_fs.json','r') as file:
