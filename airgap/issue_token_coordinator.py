@@ -10,7 +10,7 @@ import sys
 import os
 
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "gRW13x264QqRRqA6CU6Eo8yg5VF9AfhkfG"
+reissuanceToken = "gQe3hv8ahChBpJrZqwAjY5z4o377iBvijz"
 
 print("Issue a new asset")
 
