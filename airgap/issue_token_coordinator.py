@@ -252,14 +252,14 @@ for count in range(4):
 	except:
 		inpt = input("ERROR: files not found. Check they have been copied correctly? ")
 		if str(inpt) != "Yes":
-    		print("Exit")
-    		sys.exit()
+			print("Exit")
+			sys.exit()
 		nfound += 1
 
 if nfound > 3:
 	print("ERROR: files not found, exiting.")
-    print("Exit")
-    sys.exit()
+	print("Exit")
+	sys.exit()
 
 chaininfo = ocean.call('getblockchaininfo')
 bheight = 60 - int(chaininfo["blocks"]) % 60
