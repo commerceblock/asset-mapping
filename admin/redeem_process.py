@@ -185,8 +185,6 @@ if not inwallet == "freezeasset":
 
 paunspent = ocean.call('listunspent')
 
-frzlistasset = paunspent[0]["asset"]
-
 txinlst = []
 for output in paunspent:
     if output["address"] == frzaddress:
@@ -194,6 +192,7 @@ for output in paunspent:
         utxo.append(output["txid"])
         utxo.append(output["vout"])
         utxo.append(output["amount"])
+        frzlistasset = output["asset"]
         txinlst.append(utxo)
 
 print(" ")
