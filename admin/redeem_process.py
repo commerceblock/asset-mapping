@@ -243,7 +243,6 @@ while unconfirmed:
 
 chaininfo = ocean.call('getblockchaininfo')
 blkh2 = int(chaininfo["blocks"])
-objbh = new_map_obj.get_height()
 if blkh2 // 60 != blkh // 60:
     print("Inflation period expired: restart issuance process")
     print("Exit")
