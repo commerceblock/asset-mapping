@@ -338,5 +338,6 @@ if signed_map_obj == new_map_obj:
     print("    DONE")
 else:
     print("ERROR: Mapping upload failure.")
+    print("Check internet connection and upload manually or contact CommerceBlock for assistance")
 
 

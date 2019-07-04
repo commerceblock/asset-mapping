@@ -121,6 +121,9 @@ print("Retrieving UTXO report ...")
 print(" ")
 map_dict = map_obj.get_json()
 
+chaininfo = ocean.call('getblockchaininfo')
+token_ratio = am.token_ratio(int(chaininfo["blocks"]))
+
 for btoken in burnt_tokens:
     for entry in utxorep:
         asset = entry["asset"]

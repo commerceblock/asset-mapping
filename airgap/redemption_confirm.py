@@ -8,6 +8,7 @@ import time
 import boto3
 import sys
 import json
+import os
 
 print("Redemption of tokens for a specified asset")
 
@@ -96,14 +97,21 @@ if assetMass != map_obj.get_mass_assetid(rref):
     print("Exit")
     sys.exit()
 
+chaininfo = ocean.call('getblockchaininfo')
+
+print("    Current blockheight: "+str(chaininfo["blocks"]))
+token_ratio = am.token_ratio(int(chaininfo["blocks"]))
+print("    Current token ratio = "+str("%.13f" % token_ratio))
+print(" ")
+
 inpt = input("Enter the redemption initiation block height: ")
 blkh = int(inpt)
 print(" ")
 
-token_ratio = am.token_ratio(blkh)
-tokenAmount = assetMass/token_ratio
-print("    Token ratio: "+str("%.13f" % token_ratio)+" at height "+str(blkh))
-print("    Required total tokens: "+str("%.8f" % round(assetMass/token_ratio,8)))
+red_token_ratio = am.token_ratio(blkh)
+tokenAmount = assetMass/red_token_ratio
+print("    Token ratio: "+str("%.13f" % red_token_ratio)+" at height "+str(blkh))
+print("    Required total tokens: "+str("%.8f" % round(assetMass/red_token_ratio,8)))
 print(" ")
 inpt = input("Enter total number of burnt token types: ")
 ntokens = int(inpt)
@@ -133,6 +141,9 @@ print("Retrieving UTXO report ...")
 print(" ")
 map_dict = map_obj.get_json()
 
+chaininfo = ocean.call('getblockchaininfo')
+token_ratio = am.token_ratio(int(chaininfo["blocks"]))
+
 for btoken in burnt_tokens:
     for entry in utxorep:
         asset = entry["asset"]
@@ -141,8 +152,8 @@ for btoken in burnt_tokens:
             print("    TokenID: "+str(asset))
             print("        Map mass = "+str(btoken[2]))
             print("        Chain mass = "+str("%.5f" % (amount*token_ratio)))
-            print("        Redemption mass = "+str("%.5f" % (btoken[1]*token_ratio)))
-            diffr = btoken[2]-amount*token_ratio-btoken[1]*token_ratio
+            print("        Redemption mass = "+str("%.5f" % (btoken[1]*red_token_ratio)))
+            diffr = btoken[2]-amount*token_ratio-btoken[1]*red_token_ratio
             print("        Difference = "+str("%.5f" % diffr))
             print(" ")
             if diffr < -0.0000001:
@@ -186,3 +197,18 @@ signed_map_obj.export_json("map.json")
 print("Upload to server")
 #upload new map to S3
 s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')
+print(" ")
+print("Confirm mapping upload ...")
+print(" ")
+s3 = boto3.resource('s3')
+s3.Bucket('cb-mapping').download_file('map.json','map_tmp.json')
+
+new_map_obj = am.MapDB(2,3)
+new_map_obj.load_json('map_tmp.json')
+
+if signed_map_obj == new_map_obj:
+    print("    Issuance complete and verified")
+    print("    DONE")
+else:
+    print("ERROR: Mapping upload failure.")
+    print("Check internet connection and upload manually or contact CommerceBlock for assistance")
