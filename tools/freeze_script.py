@@ -35,7 +35,7 @@ print("Blockchain time: "+str(bestblock["time"])+" ("+datetime.fromtimestamp(bes
 print(" ")
 
 token_ratio = am.token_ratio(bheight)
-tokenAmount = assetMass/token_ratio
+tokenAmount = am.token_amount(bheight,assetMass)
 
 print("    Token ratio = "+str("%.13f" % token_ratio))
 print("    Tokens required = "+str("%.8f" % round(tokenAmount,8)))

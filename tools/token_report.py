@@ -36,7 +36,7 @@ print(" ")
 chaininfo = ocean.call('getblockchaininfo')
 blkh = int(chaininfo["blocks"])
 token_ratio = am.token_ratio(blkh)
-print("Token ratio = "+str("%.13f" % token_ratio)+" at block "+str(blkh))
+print("Token ratio = "+str("%.13f" % round(token_ratio,13))+" at block "+str(blkh))
 print(" ")
 print("Matched tokens:")
 print(" ")
@@ -56,7 +56,7 @@ for entry in utxorep:
             mass += j["mass"]
             inmap = True
     if inmap and amount < 9999.0:
-        exptoken = mass/token_ratio
+        exptoken = am.token_amount(blkh,mass)
         print(asset+"   "+str("%.3f" % mass)+"     "+str("%.8f" % round(exptoken,8))+"         "+str("%.8f" % round(amount,8)))
     elif amount < 9999.0:
         excluded = []

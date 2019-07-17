@@ -146,10 +146,10 @@ print(" ")
 tokenAmountList = []
 print("Token issuances: ")
 for issit in range(numiss):
-	tokenAmount = assetMassList[issit]/token_ratio
+	tokenAmount = am.token_amount(bheight,assetMassList[issit])
 	assref = assetRefList[issit]+"-"+assetYearList[issit]+"-"+assetManList[issit]
 	print("    Asset: "+assref+"  tokens = "+str("%.8f" % round(tokenAmount,8)))
-	tokenAmountList.append(tokenAmount)
+	tokenAmountList.append(round(tokenAmount,8))
 
 print(" ")
 

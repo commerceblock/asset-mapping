@@ -41,7 +41,7 @@ def get_available_assets():
 
     chaininfo = ocean.call('getblockchaininfo')
     blkh = int(chaininfo["blocks"])
-    token_ratio = am.token_ratio(blkh)
+    token_ratio = round(am.token_ratio(blkh),13)
 
     available_assets = []
     for asset in r_obj["assets"]:
@@ -50,7 +50,7 @@ def get_available_assets():
         lck = asset["lock"]
         if not lck:
             mass = map_obj.get_mass_assetid(ref)
-            exptoken = round(mass/token_ratio,8)
+            exptoken = am.token_amount(blkh,mass)
             ref_comp = ref.split("-")
             available_asset["serialno"] = ref_comp[0]
             available_asset["year"] = ref_comp[1]

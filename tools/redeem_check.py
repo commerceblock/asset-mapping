@@ -66,7 +66,7 @@ def redemption_check(rref,rfeetx,rtx):
         return False, "Entered asset already locked for redemption"
 
     # expect number of tokens for redemption
-    exptoken = rmass/token_ratio
+    exptoken = am.token_amount(blkh,rmass)
 
     feetxcheck = ocean.call('testmempoolaccept',rfeetx)
 

@@ -116,12 +116,12 @@ print("Confirm token issuances:")
 print(" ")
 bheight = chaininfo["blocks"]
 token_ratio = am.token_ratio(bheight)
-print("    token ratio = "+str("%.13f" % token_ratio))
+print("    token ratio = "+str("%.13f" % round(token_ratio,13)))
 print(" ")
 
 numiss = int(partial_tx["numiss"])
 for issit in range(numiss):
-    tokenAmount = float(partial_tx[str(issit)]["mass"])/token_ratio
+    tokenAmount = am.token_amount(bheight,partial_tx[str(issit)]["mass"])
     decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
     txTokenAmount = decode_tx["vin"][0]["issuance"]["assetamount"]
     print("    mass = "+str("%.3f" % partial_tx[str(issit)]["mass"])+"   expected tokens = "+str("%.8f" % round(tokenAmount,8))+"   transaction tokens = "+str("%.8f" % txTokenAmount))

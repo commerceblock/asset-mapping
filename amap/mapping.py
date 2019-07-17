@@ -12,6 +12,8 @@ from datetime import datetime
 from datadiff import diff
 import math
 
+INFLATION_RATE = 0.010101010101010101
+
 def controller_keygen():
 #function to generate a random mnemonic recovery phrase
 #and in turn a private a public keys
@@ -38,19 +40,28 @@ def controller_recover_key(recovery_phrase):
 def token_ratio(blockheight):
 #function to return the token ratio at the supplied block height
 #The rate is the inflation rate (not the demmurage rate)
-    rate = 0.010101010101010101
-#Hourly inflation rate
-    hrate = (1.0 + rate)**(1.0/(365.0*24.0))
-#The zero ratio is the token ratio at time zero
-    zeroratio = 400.0
+    init = 400.0
 #calculate the number of hours based on the blockheight
     hours = blockheight // 60
 #calculate the token ratio iteratively based on intermediate rounding to 6 deciaml places
     ratio = 4000.0
     for it in range(hours):
-        ratio += round((ratio*hrate - ratio),8)
-    tr = zeroratio/ratio
+        ratio = round(ratio*(1.0+float(INFLATION_RATE))**(1.0/(24*365)),8)
+    tr = init/ratio
     return round(tr,13)
+
+def token_amount(blockheight, mass):
+#function to return the token amount corresponding to the supplied mass and blockheight
+#The zero ratio is the token ratio at time zero
+    init_ratio = 0.1
+#calculate the number of hours based on the blockheight
+    hours = blockheight // 60
+#calculate the token ratio iteratively based on intermediate rounding to 6 deciaml places
+    total = round(mass/init_ratio,8)
+    for it in range(hours):
+        reissue = round(total*(1.0+float(INFLATION_RATE))**(1.0/(24*365))-total,8)
+        total += reissue
+    return round(total,8)
 
 class ConPubKey(object):
 #class for a public key object for the full list of controller public keys

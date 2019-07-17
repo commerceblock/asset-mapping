@@ -62,7 +62,7 @@ ocean = rpc.RPCHost(url)
 chaininfo = ocean.call('getblockchaininfo')
 blkh = int(chaininfo["blocks"])
 token_ratio = am.token_ratio(blkh)
-print("Token ratio = "+str("%.11f" % token_ratio)+" at block "+str(blkh))
+print("Token ratio = "+str("%.13f" % round(token_ratio,13))+" at block "+str(blkh))
 print(" ")
 
 reissue_count = 60 - int(chaininfo["blocks"]) % 60
@@ -99,8 +99,8 @@ if locked:
     print("Exit")
     sys.exit()     
 
-print("Asset mass: "+str("%.3f" % rmass))
-exptoken = rmass/token_ratio
+print("Asset mass: "+str("%.9f" % rmass))
+exptoken = am.token_amount(blkh,rmass)
 print("Required tokens: "+str("%.8f" % round(exptoken,8)))
 print(" ")
 
