@@ -37,7 +37,7 @@ print(" ")
 
 print("Load the updated mapping object from file")
 new_map_obj = am.MapDB(2,3)
-new_map_obj.load_json('ps_map.json')
+new_map_obj.load_json('map_ps.json')
 nmass = new_map_obj.get_total_mass()
 print("    Mass difference: "+str("%.3f" % (nmass-fmass)))
 print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
