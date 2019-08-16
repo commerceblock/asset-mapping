@@ -54,6 +54,8 @@ print(" ")
 inpt = input("Confirm diff data correct? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
@@ -83,6 +85,8 @@ print("        Mass: "+str("%.3f" % assetMass))
 print(" ")
 inpt = input("Confirm data correct? ")
 print(" ")
+if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
@@ -172,6 +176,8 @@ new_map_obj.export_json("map_ps.json")
 
 cwd = os.getcwd()
 inpt = input("Confirm transactions and mapping signed (and copied to "+cwd+" directory)? ")
+if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
