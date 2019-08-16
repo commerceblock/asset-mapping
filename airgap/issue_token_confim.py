@@ -46,6 +46,8 @@ print(" ")
 inpt = input("Confirm mapping mass and timestamp corresponds to last known change? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 print(" ")
@@ -76,6 +78,8 @@ print(" ")
 
 inpt = input("Confirm diff data correct? ")
 print(" ")
+if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
@@ -136,6 +140,8 @@ print(" ")
 inpt = input("Confirm token issuance correct? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
@@ -151,6 +157,8 @@ print(" ")
 inpt = input("Addresses correct? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
@@ -161,6 +169,8 @@ for issit in range(numiss):
         print("WARNING: re-issuance address is not the block-signing script")
         inpt = input("Proceed? ")
         print(" ")
+        if str(inpt) != "Yes":
+            inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
         if str(inpt) != "Yes":
             print("Exit")
             sys.exit()
@@ -181,6 +191,8 @@ print(" ")
 cwd = os.getcwd()
 inpt = input("Confirm transactions and mapping signed (and copied to "+cwd+" directory as map_fs.json and tx_fs.json)? ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 print(" ")
@@ -190,6 +202,8 @@ try:
     open('map_fs.json','r').read()
 except:
     inpt = input("ERROR: files not found. Check they have been copied correctly? ")
+    if str(inpt) != "Yes":
+        inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
     if str(inpt) != "Yes":
         print("Exit")
         sys.exit()
@@ -237,6 +251,8 @@ print(" ")
 inpt = input("Proceed? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 print(" ")
@@ -254,6 +270,8 @@ else:
 print(" ")
 inpt = input("Confirm send transactions? ")
 print(" ")
+if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
