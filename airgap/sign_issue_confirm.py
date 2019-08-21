@@ -71,6 +71,8 @@ print(" ")
 inpt = input("Confirm token issuances correct? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
@@ -85,6 +87,8 @@ for issit in range(numiss):
 inpt = input("Addresses correct? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
@@ -95,6 +99,8 @@ for issit in range(numiss):
         print("WARNING: re-issuance address is not the block-signing script")
         inpt = input("Proceed? ")
         print(" ")
+        if str(inpt) != "Yes":
+            inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
         if str(inpt) != "Yes":
             print("Exit")
             sys.exit()
