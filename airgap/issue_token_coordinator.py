@@ -33,6 +33,8 @@ print(" ")
 inpt = input("Confirm mapping mass and timestamp corresponds to last known change? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 print(" ")
@@ -239,6 +241,8 @@ except OSError:
 
 inpt = input("Confirm transactions and mapping signed? ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 print(" ")
@@ -252,7 +256,9 @@ for count in range(4):
 	except:
 		inpt = input("ERROR: files not found. Check they have been copied correctly? ")
 		if str(inpt) != "Yes":
-			print("Exit")
+			inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+		if str(inpt) != "Yes":
+    			print("Exit")
 			sys.exit()
 		nfound += 1
 
