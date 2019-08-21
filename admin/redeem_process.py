@@ -70,8 +70,9 @@ print("This redemption transaction must be confirmed within the next "+str(reiss
 inpt = input("Proceed? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
-    sys.exit()
 print(" ")
 
 rref = input("Enter redeemed asset reference: ")
