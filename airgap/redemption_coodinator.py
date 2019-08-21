@@ -60,6 +60,8 @@ print(" ")
 inpt = input("Confirm data correct? ")
 print(" ")
 if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
+if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
 
@@ -158,6 +160,8 @@ am.diff_mapping(map_obj,map_orig)
 
 inpt = input("Confirm diff data correct? ")
 print(" ")
+if str(inpt) != "Yes":
+    inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
 if str(inpt) != "Yes":
     print("Exit")
     sys.exit()
