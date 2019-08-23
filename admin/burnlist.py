@@ -60,7 +60,7 @@ for output in paunspent:
         txinlst.append(utxo)
 
 print(" ")
-print("Policy asset UTXOs found: "+str(len(txinlst)))
+print("Burnlist asset UTXOs found: "+str(len(txinlst)))
 
 txin = txinlst[0]
 inpts = []

@@ -8,7 +8,7 @@ import boto3
 import sys
 import json
 
-testnet = False
+testnet = True
 
 #version byte is 111 for testnet, 0 for mainnet
 if testnet:
@@ -35,72 +35,143 @@ rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
-print("Add address to freezelist:")
+inpto = input("Add address to freezelist or remove from freezelist? (A/R)")
 
-inpt = input("Enter address: ")
-addresstofreeze = str(inpt)
-#the client wallet we connect to via RPC is expected to have the private keys to the policy asset outputs
+if inpto == 'A':
 
-#the UTXO database lists unspent policy asset outputs that can be used for issuance
-#check if policyasset address is already in wallet
-inwallet = ocean.call('getaccount',frzaddress)
-if not inwallet == "freezeasset":
-    ocean.call('importprivkey',frzlistprivkey,"freezeasset",True)
+    inpt = input("Enter address: ")
+    addresstofreeze = str(inpt)
+    #the client wallet we connect to via RPC is expected to have the private keys to the policy asset outputs
 
-paunspent = ocean.call('listunspent')
+    #the UTXO database lists unspent policy asset outputs that can be used for issuance
+    #check if policyasset address is already in wallet
+    inwallet = ocean.call('getaccount',frzaddress)
+    if not inwallet == "freezeasset":
+        ocean.call('importprivkey',frzlistprivkey,"freezeasset",True)
 
-frzlistasset = paunspent[0]["asset"]
+    paunspent = ocean.call('listunspent')
 
-txinlst = []
-for output in paunspent:
-    if output["address"] == frzaddress:
-        utxo = []
-        utxo.append(output["txid"])
-        utxo.append(output["vout"])
-        utxo.append(output["amount"])
-        txinlst.append(utxo)
+    frzlistasset = paunspent[0]["asset"]
 
-print(" ")
-print("Policy asset UTXOs found: "+str(len(txinlst)))
-
-txin = txinlst[0]
-inpts = []
-inpt = {}
-inpt["txid"] = txin[0]
-inpt["vout"] = int(txin[1])
-inpts.append(inpt)
-otpts = []
-otpt = {}
-otpt["pubkey"] = frzpubkey
-otpt["value"] = txin[2]
-otpt["address"] = addresstofreeze
-otpts.append(otpt)
-freezetx = ocean.call('createrawpolicytx',inpts,otpts,0,frzlistasset)
-freezetx_signed = ocean.call('signrawtransaction',freezetx)
-freezetx_send = ocean.call('sendrawtransaction',freezetx_signed["hex"])
-
-unconfirmed = True
-while unconfirmed:
-    print("Pause for on-chain confirmation")
-    for i in range(35):
-        sys.stdout.write('\r')
-        sys.stdout.write('.'*i)
-        sys.stdout.flush()
-        time.sleep(1)
+    txinlst = []
+    for output in paunspent:
+        if output["address"] == frzaddress:
+            utxo = []
+            utxo.append(output["txid"])
+            utxo.append(output["vout"])
+            utxo.append(output["amount"])
+            txinlst.append(utxo)
 
     print(" ")
-    print("    Check policy transactins confirmed")
-    gettx = ocean.call('getrawtransaction',freezetx_send,True)
-    if "confirmations" in gettx: unconfirmed = False
+    print("Policy asset UTXOs found: "+str(len(txinlst)))
 
-print("Check freezelist for address: "+str(addresstofreeze))
-print(" ")
+    txin = txinlst[0]
+    inpts = []
+    inpt = {}
+    inpt["txid"] = txin[0]
+    inpt["vout"] = int(txin[1])
+    inpts.append(inpt)
+    otpts = []
+    otpt = {}
+    otpt["pubkey"] = frzpubkey
+    otpt["value"] = txin[2]
+    otpt["address"] = addresstofreeze
+    otpts.append(otpt)
+    freezetx = ocean.call('createrawpolicytx',inpts,otpts,0,frzlistasset)
+    freezetx_signed = ocean.call('signrawtransaction',freezetx)
+    freezetx_send = ocean.call('sendrawtransaction',freezetx_signed["hex"])
 
-islisted = ocean.call('queryfreezelist',addresstofreeze)
+    unconfirmed = True
+    while unconfirmed:
+        print("Pause for on-chain confirmation")
+        for i in range(35):
+            sys.stdout.write('\r')
+            sys.stdout.write('.'*i)
+            sys.stdout.flush()
+            time.sleep(1)
 
-if islisted:
-    print("   Confirmed")
+        print(" ")
+        print("    Check policy transactins confirmed")
+        gettx = ocean.call('getrawtransaction',freezetx_send,True)
+        if "confirmations" in gettx: unconfirmed = False
+
+    print("Check freezelist for address: "+str(addresstofreeze))
+    print(" ")
+
+    islisted = ocean.call('queryfreezelist',addresstofreeze)
+
+    if islisted:
+        print("   Confirmed")
+    else:
+        print("   Failed")
+
+elif inpto == 'R':
+
+    inpt = input("Enter address: ")
+    addresstofreeze = str(inpt)
+    #the client wallet we connect to via RPC is expected to have the private keys to the policy asset outputs
+
+    #the UTXO database lists unspent policy asset outputs that can be used for issuance
+    #check if policyasset address is already in wallet
+    inwallet = ocean.call('getaccount',frzaddress)
+    if not inwallet == "freezeasset":
+        ocean.call('importprivkey',frzlistprivkey,"freezeasset",True)
+
+    paunspent = ocean.call('listunspent')
+
+    frzlistasset = paunspent[0]["asset"]
+
+    txinlst = []
+    for output in paunspent:
+        if output["address"] == frzaddress:
+            utxo = []
+            utxo.append(output["txid"])
+            utxo.append(output["vout"])
+            utxo.append(output["amount"])
+            txinlst.append(utxo)
+
+    print(" ")
+    print("Policy asset UTXOs found: "+str(len(txinlst)))
+
+    txin = txinlst[0]
+    inpts = []
+    inpt = {}
+    inpt["txid"] = txin[0]
+    inpt["vout"] = int(txin[1])
+    inpts.append(inpt)
+    otpts = []
+    otpt = {}
+    otpt["pubkey"] = frzpubkey
+    otpt["value"] = txin[2]
+    otpt["address"] = addresstofreeze
+    otpts.append(otpt)
+    freezetx = ocean.call('createrawpolicytx',inpts,otpts,0,frzlistasset)
+    freezetx_signed = ocean.call('signrawtransaction',freezetx)
+    freezetx_send = ocean.call('sendrawtransaction',freezetx_signed["hex"])
+
+    unconfirmed = True
+    while unconfirmed:
+        print("Pause for on-chain confirmation")
+        for i in range(35):
+            sys.stdout.write('\r')
+            sys.stdout.write('.'*i)
+            sys.stdout.flush()
+            time.sleep(1)
+
+        print(" ")
+        print("    Check policy transactins confirmed")
+        gettx = ocean.call('getrawtransaction',freezetx_send,True)
+        if "confirmations" in gettx: unconfirmed = False
+
+    print("Check freezelist for address: "+str(addresstofreeze))
+    print(" ")
+
+    islisted = ocean.call('queryfreezelist',addresstofreeze)
+
+    if islisted:
+        print("   Confirmed")
+    else:
+        print("   Failed")
+
 else:
-    print("   Failed")
-
-
+    print("Invalid option")
