@@ -81,8 +81,8 @@ if datetime.now().timestamp() > float(bestblock["time"]) + 100.0:
     print("Exit")
     sys.exit()
 
-reissue_count = 60 - int(chaininfo["blocks"]) % 60
-print("This issuance must be completed within the next "+str(reissue_count)+" blocks (minutes)")
+reissue_count = 480 - int(chaininfo["blocks"]) % 480
+print("This issuance must be completed within the next "+str(reissue_count)+" blocks ("+str(reissue_count // 60)+"h "+str(reissue_count % 60)+"m)")
 inpt = input("Proceed? ")
 print(" ")
 if str(inpt) != "Yes":
@@ -268,6 +268,6 @@ if nfound > 3:
 	sys.exit()
 
 chaininfo = ocean.call('getblockchaininfo')
-bheight = 60 - int(chaininfo["blocks"]) % 60
+bheight = 480 - int(chaininfo["blocks"]) % 480
 print("Partially signed issuance transactions and object uploaded to cloud")
-print("Contact confirmer to complete the issuance within the next "+str(bheight)+" minutes")
+print("Contact confirmer to complete the issuance within the next "+str(bheight // 60)+" hours "+str(bheight % 60)+" minutes)")

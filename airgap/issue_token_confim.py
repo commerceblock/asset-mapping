@@ -237,16 +237,16 @@ for issit in range(numiss):
 chaininfo = ocean.call('getblockchaininfo')
 blkh = int(chaininfo["blocks"])
 objbh = new_map_obj.get_height()
-if blkh // 60 != objbh // 60:
+if blkh // 480 != objbh // 480:
     print("Inflation period expired: restart issuance process")
     print("Exit")
     sys.exit()   
-reissue_count = 60 - blkh % 60
-if reissue_count < 3:
+reissue_count = 480 - blkh % 480
+if reissue_count < 4:
     print("Insufficient time for confirmation: restart issuance process")
     print("Exit")
     sys.exit()
-print("Issuance must be completed within the next "+str(reissue_count)+" blocks (minutes)")
+print("Issuance must be completed within the next "+str(reissue_count)+" blocks ("+str(reissue_count // 60)+"h "+str(reissue_count % 60)+"m)")
 print(" ")
 inpt = input("Proceed? ")
 print(" ")
@@ -279,11 +279,11 @@ if str(inpt) != "Yes":
 chaininfo = ocean.call('getblockchaininfo')
 blkh = int(chaininfo["blocks"])
 objbh = new_map_obj.get_height()
-if blkh // 60 != objbh // 60:
+if blkh // 480 != objbh // 480:
     print("Inflation period expired: restart issuance process")
     print("Exit")
     sys.exit()
-reissue_count = 60 - blkh % 60
+reissue_count = 480 - blkh % 480
 if reissue_count < 3:
     print("Insufficient time for confirmation: restart issuance process")
     print("Exit")
@@ -343,6 +343,9 @@ signed_map_obj.export_json("map.json")
 s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read',ContentType='application/json')
 print(" ")
 
+#add new map to log
+signed_map_obj.export_json("map_log.json",True)
+
 print("Confirm mapping upload ...")
 print(" ")
 s3 = boto3.resource('s3')
@@ -351,7 +354,7 @@ s3.Bucket('cb-mapping').download_file('map.json','map_tmp.json')
 new_map_obj = am.MapDB(2,3)
 new_map_obj.load_json('map_tmp.json')
 
-if signed_map_obj == new_map_obj:
+if signed_map_obj.get_height() == new_map_obj.get_height():
     print("    Issuance complete and verified")
     print("    DONE")
 else:
