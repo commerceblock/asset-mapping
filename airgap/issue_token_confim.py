@@ -298,7 +298,7 @@ for issit in range(numiss):
     print(" ")
 
 unconfirmed = True
-for count in range(8):
+for count in range(10):
     print("Pause for on-chain confirmation")
     for i in range(35):
         sys.stdout.write('\r')
@@ -323,6 +323,40 @@ for count in range(8):
     if confs == numiss: 
         unconfirmed = False
         break
+
+if unconfirmed:
+    print("Transaction not confirmed for 4 minutes")
+    print("Check node syncronisation and internet connection")
+
+    print(" ")
+    inpt = input("Confirm node syncronised and connected? ")
+    print(" ")
+
+    for count in range(10):
+        print("Pause for on-chain confirmation")
+        for i in range(35):
+            sys.stdout.write('\r')
+            sys.stdout.write('.'*i)
+            sys.stdout.flush()
+            time.sleep(1)
+
+        print(" ")
+        print("    Check assets created on-chain")
+        #call the token info rpc
+        utxorep = ocean.call('getutxoassetinfo')
+        asset_conf = False
+        confs = 0
+
+        for issit in range(numiss):
+            decode_full = ocean.call('decoderawtransaction',signed_tx[issit]["hex"])
+            for entry in utxorep:
+                if entry["asset"] == decode_full["vin"][0]["issuance"]["asset"]:
+                    if entry["amountspendable"] == decode_full["vin"][0]["issuance"]["assetamount"]:
+                        asset_conf = True
+                        confs += 1
+        if confs == numiss: 
+            unconfirmed = False
+            break
 
 if unconfirmed:
     print("ERROR: Tokens not correctly created on chain")

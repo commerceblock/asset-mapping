@@ -50,7 +50,7 @@ print(" ")
 
 print("Connecting to Ocean client")
 print(" ")
-rpcport = 18884
+rpcport = 7041
 rpcuser = 'user1'
 rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)

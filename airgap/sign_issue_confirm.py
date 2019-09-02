@@ -10,19 +10,16 @@ import os
 from datetime import datetime
 
 #key file directory
-keydir = os.getenv('KEYDIR', default="/Users/ttrevethan/asset-mapping/confirmer/keys/")
+keydir = os.getenv('KEYDIR', default="")
 
 #object directory for import and export of json objects
-objdir = os.getenv('OBJDIR', default="/Users/ttrevethan/asset-mapping/confirmer/obj/")
+objdir = os.getenv('OBJDIR', default="")
 
 #controller number
 ncontrol = 2
 
 #version byte is 111 for testnet, 0 for mainnet
 version_byte = 52
-
-#the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "gRW13x264QqRRqA6CU6Eo8yg5VF9AfhkfG"
 
 rpcport = 18884
 rpcuser = 'user1'
@@ -95,7 +92,7 @@ if str(inpt) != "Yes":
 #hard-coded address for the block-signing script
 for issit in range(numiss):
     decode_tx = ocean.call('decoderawtransaction',partial_tx[str(issit)]["hex"])
-    if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != reissuanceToken:
+    if decode_tx["vout"][1]["scriptPubKey"]["addresses"][0] != p2sh["reissuanceToken"]:
         print("WARNING: re-issuance address is not the block-signing script")
         inpt = input("Proceed? ")
         print(" ")
