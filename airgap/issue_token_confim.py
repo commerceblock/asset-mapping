@@ -11,9 +11,9 @@ import os
 from datetime import datetime
 
 #hard-coded federation blocksigning multisig address
-reissuanceToken = "gQe3hv8ahChBpJrZqwAjY5z4o377iBvijz"
+reissuanceToken = ""
 
-print("Issue an new asset")
+print("Issue a new asset")
 print(" ")
 print("Controller 2: Confirmer")
 print(" ")

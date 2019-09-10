@@ -29,7 +29,7 @@ frzaddress = bc.pubkey_to_address(frzpubkey,addr_byte)
 
 print("Connecting to Ocean client")
 print(" ")
-rpcport = 18884
+rpcport = 7041
 rpcuser = 'user1'
 rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
@@ -47,6 +47,7 @@ if inpto == 'A':
     #check if policyasset address is already in wallet
     inwallet = ocean.call('getaccount',frzaddress)
     if not inwallet == "freezeasset":
+        print("Importing privkey ...")
         ocean.call('importprivkey',frzlistprivkey,"freezeasset",True)
 
     paunspent = ocean.call('listunspent')

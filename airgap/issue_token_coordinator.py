@@ -10,7 +10,7 @@ import sys
 import os
 
 #the reissuance token is hard coded to the federation block-signing script
-reissuanceToken = "gQe3hv8ahChBpJrZqwAjY5z4o377iBvijz"
+reissuanceToken = ""
 
 print("Issue a new asset")
 
@@ -216,6 +216,9 @@ print(" ")
 print("     map_us.json")
 print("     tx_us.json")
 map_obj.export_json("map_us.json")
+
+#save for archive
+map_obj.export_json("map_us_log.json",True)
 
 #add the input transaction data to the tx file to enable the second signature to be generated
 for issit in range(numiss):
