@@ -8,7 +8,7 @@ import boto3
 import sys
 import json
 
-testnet = True
+testnet = False
 
 #version byte is 111 for testnet, 0 for mainnet
 if testnet:
