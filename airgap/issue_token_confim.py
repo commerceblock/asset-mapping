@@ -20,7 +20,7 @@ print(" ")
 
 print("Fetch the current mapping object - connecting to S3")
 s3 = boto3.resource('s3')
-s3.Bucket('cb-mapping').download_file('map.json','map.json')
+s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
@@ -53,8 +53,8 @@ if str(inpt) != "Yes":
 print(" ")
 
 print("Fetch the partially signed objects")
-s3.Bucket('cb-mapping').download_file('map_ps.json','map_ps.json')
-s3.Bucket('cb-mapping').download_file('tx_ps.json','tx_ps.json')
+s3.Bucket('gtsa-mapping').download_file('map_ps.json','map_ps.json')
+s3.Bucket('gtsa-mapping').download_file('tx_ps.json','tx_ps.json')
 print(" ")
 
 print("Load the updated mapping object")
@@ -374,7 +374,7 @@ print(" ")
 print("Export fully signed mapping object")
 signed_map_obj.export_json("map.json")
 #upload new map to S3
-s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read',ContentType='application/json')
+s3.Object('gtsa-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read',ContentType='application/json')
 print(" ")
 
 #add new map to log
@@ -383,7 +383,7 @@ signed_map_obj.export_json("map_log.json",True)
 print("Confirm mapping upload ...")
 print(" ")
 s3 = boto3.resource('s3')
-s3.Bucket('cb-mapping').download_file('map.json','map_tmp.json')
+s3.Bucket('gtsa-mapping').download_file('map.json','map_tmp.json')
 
 new_map_obj = am.MapDB(2,3)
 new_map_obj.load_json('map_tmp.json')
