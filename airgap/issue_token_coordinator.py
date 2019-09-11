@@ -262,7 +262,7 @@ for count in range(4):
 			inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
 		if str(inpt) != "Yes":
     			print("Exit")
-			sys.exit()
+    			sys.exit()
 		nfound += 1
 
 if nfound > 3:
