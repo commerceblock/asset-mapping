@@ -73,6 +73,6 @@ print(" ")
 for asset in available:
 	print(asset)
 
-reissue_count = 60 - int(bheight) % 60
+reissue_count = 480 - int(bheight) % 480
 print("This token amount is valid for the next "+str(reissue_count)+" blocks (minutes)")
 
