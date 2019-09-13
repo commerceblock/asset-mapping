@@ -19,7 +19,7 @@ print(" ")
 print("Load the current mapping object - connecting to S3")
 s3 = boto3.resource('s3')
 s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
-s3.Bucket('gtsa-mapping').download_file('ps_map.json','ps_map.json')
+s3.Bucket('gtsa-mapping').download_file('map_ps.json','map_ps.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
