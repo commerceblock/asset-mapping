@@ -10,7 +10,7 @@ import json
 
 testnet = False
 
-#version byte is 111 for testnet, 0 for mainnet
+#version byte is 111 for testnet, 0 for mainnet, 52 for gold token
 if testnet:
     version_byte = 111
     addr_byte = 235
@@ -65,7 +65,7 @@ token_ratio = am.token_ratio(blkh)
 print("Token ratio = "+str("%.13f" % round(token_ratio,13))+" at block "+str(blkh))
 print(" ")
 
-reissue_count = 60 - int(chaininfo["blocks"]) % 60
+reissue_count = 480 - int(chaininfo["blocks"]) % 480
 print("This redemption transaction must be confirmed within the next "+str(reissue_count)+" blocks (minutes)")
 inpt = input("Proceed? ")
 print(" ")
@@ -244,11 +244,11 @@ while unconfirmed:
 
 chaininfo = ocean.call('getblockchaininfo')
 blkh2 = int(chaininfo["blocks"])
-if blkh2 // 60 != blkh // 60:
+if blkh2 // 480 != blkh // 480:
     print("Inflation period expired: restart issuance process")
     print("Exit")
     sys.exit()
-reissue_count = 60 - blkh2 % 60
+reissue_count = 480 - blkh2 % 480
 if reissue_count < 3:
     print("Insufficient time for confirmation this period: new redemption amount required")
     print("Exit")

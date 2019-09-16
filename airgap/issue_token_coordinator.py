@@ -20,7 +20,7 @@ print(" ")
 
 print("Load the mapping object - connecting to S3")
 s3 = boto3.resource('s3')
-s3.Bucket('cb-mapping').download_file('map.json','map.json')
+s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
@@ -254,15 +254,15 @@ nfound = 0
 for count in range(4):
 	try:
 		#upload new partially signed objects 
-		s3.Object('cb-mapping','tx_ps.json').put(Body=open('tx_ps.json','rb'))
-		s3.Object('cb-mapping','map_ps.json').put(Body=open('map_ps.json','rb'))
+		s3.Object('gtsa-mapping','tx_ps.json').put(Body=open('tx_ps.json','rb'))
+		s3.Object('gtsa-mapping','map_ps.json').put(Body=open('map_ps.json','rb'))
 	except:
 		inpt = input("ERROR: files not found. Check they have been copied correctly? ")
 		if str(inpt) != "Yes":
 			inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
 		if str(inpt) != "Yes":
     			print("Exit")
-			sys.exit()
+    			sys.exit()
 		nfound += 1
 
 if nfound > 3:
