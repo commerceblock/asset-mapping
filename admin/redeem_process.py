@@ -134,7 +134,7 @@ for outs in rdecode["vout"]:
         print("Exit")
         sys.exit()
     if outs["n"] == 0:
-        if outs["scriptPubKey"]["addresses"][0] == "2dZRkPX3hrPtuBrmMkbGtxTxsuYYgAaFrXZ":
+        if outs["scriptPubKey"]["addresses"][0] == "GHqvR8KwyrcJ5UJHvwf7RmLtvAnr5uTHdV":
             frztag = 1
     else:
         if outs["scriptPubKey"]["type"] == "pubkeyhash":

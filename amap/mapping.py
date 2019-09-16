@@ -43,7 +43,7 @@ def token_ratio(blockheight):
     init = 400.0
 #calculate the number of 8-hours periods based on the blockheight
     hours = blockheight // 480
-#calculate the token ratio iteratively based on intermediate rounding to 6 deciaml places
+#calculate the token ratio iteratively based on intermediate rounding to 8 deciaml places
     ratio = 4000.0
     for it in range(hours):
         ratio = round(ratio*(1.0+float(INFLATION_RATE))**(1.0/(3*365)),8)
