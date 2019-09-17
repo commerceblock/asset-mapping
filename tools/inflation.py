@@ -94,6 +94,8 @@ while client:
 
 					print("Reissue asset "+asset+" by "+str("%.8f" % total_reissue))
 
+					if total_reissue == 0.0: continue
+
 					reissuance_tx = ocean.call('createrawreissuance',reissuanceAddr,str("%.8f" % total_reissue),fedAddress,str(unspent["amount"]),unspent["txid"],str(unspent["vout"]),entropy)
 					signed_reissuance = ocean.call('signrawtransaction',reissuance_tx["hex"])
 					submit = ocean.call('sendrawtransaction',signed_reissuance["hex"])

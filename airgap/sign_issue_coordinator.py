@@ -19,7 +19,7 @@ objdir = os.getenv('OBJDIR', default="")
 ncontrol = 1
 
 #version byte is 111 for testnet, 0 for mainnet
-version_byte = 0
+version_byte = 52
 
 rpcport = 18884
 rpcuser = 'user1'
