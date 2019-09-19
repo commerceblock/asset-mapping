@@ -10,9 +10,9 @@ import json
 import requests
 
 # Connecting to Ocean client
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
+rpcport = 8332
+rpcuser = 'ocean'
+rpcpassword = 'oceanpass'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
@@ -24,7 +24,7 @@ def redemption_check(rref,rfeetx,rtx):
     rfee = 5.0
 
     #Load the mapping object - connecting to S3
-    req = requests.get('https://s3.eu-west-2.amazonaws.com/cb-mapping/map.json')
+    req = requests.get('https://s3.eu-west-1.amazonaws.com/gtsa-mapping/map.json')
 
     map_obj = am.MapDB(2,3)
     map_obj.init_json(req.json())
@@ -38,7 +38,7 @@ def redemption_check(rref,rfeetx,rtx):
         return False,"Signature verification failed"
 
     s3 = boto3.resource('s3')
-    s3.Bucket('cb-mapping').download_file('rassets.json','rassets.json')
+    s3.Bucket('gtsa-mapping').download_file('rassets.json','rassets.json')
 
     # Load the redeem list object - rassets.json
     with open('rassets.json') as file:

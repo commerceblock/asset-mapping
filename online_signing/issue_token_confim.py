@@ -19,7 +19,7 @@ print(" ")
 
 print("Fetch the current mapping object - connecting to S3")
 s3 = boto3.resource('s3')
-s3.Bucket('cb-mapping').download_file('map.json','map.json')
+s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
@@ -37,8 +37,8 @@ else:
 print(" ")
 
 print("Fetch the partially signed objects")
-s3.Bucket('cb-mapping').download_file('ps1_map.json','ps1_map.json')
-s3.Bucket('cb-mapping').download_file('ps1_tx.json','ps1_tx.json')
+s3.Bucket('gtsa-mapping').download_file('ps1_map.json','ps1_map.json')
+s3.Bucket('gtsa-mapping').download_file('ps1_tx.json','ps1_tx.json')
 print(" ")
 
 print("Load the updated mapping object")
@@ -78,9 +78,9 @@ with open('ps1_tx.json','r') as file:
 print(" ")
 print("Connecting to Ocean client")
 print(" ")
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
+rpcport = 8332
+rpcuser = 'ocean'
+rpcpassword = 'oceanpass'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 chaininfo = ocean.call('getblockchaininfo')
@@ -163,7 +163,7 @@ print("Update policy asset output list")
 #each line lists the txid, the vout, the value of the output and scriptPubKey
 
 #get the current list from S3
-s3.Bucket('cb-mapping').download_file('ptxo.dat','ptxo.dat')
+s3.Bucket('gtsa-mapping').download_file('ptxo.dat','ptxo.dat')
 
 with open("ptxo.dat",'r') as file:
     utxolist = file.readlines()
@@ -185,7 +185,7 @@ with open("ptxo.dat",'w') as file:
             file.write(line[0]+" "+str(line[1])+" "+str(line[2])+"\n")
         
 #upload new list to S3
-s3.Object('cb-mapping','ptxo.dat').put(Body=open('ptxo.dat','rb'))
+s3.Object('gtsa-mapping','ptxo.dat').put(Body=open('ptxo.dat','rb'))
 
 print(" ")
 inpt = input("Confirm send transactions? ")
@@ -258,4 +258,4 @@ print(" ")
 print("Export fully signed mapping object")
 new_map_obj.export_json("map.json")
 #upload new map to S3
-s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')
+s3.Object('gtsa-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')

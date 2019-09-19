@@ -19,7 +19,7 @@ print(" ")
 print("Load the current mapping object - connecting to S3")
 s3 = boto3.resource('s3')
 s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
-s3.Bucket('gtsa-mapping').download_file('map_ps.json','map_ps.json')
+s3.Bucket('gtsa-mapping').download_file('/Volumes/DGLD-SIGN/map_ps.json','/Volumes/DGLD-SIGN/map_ps.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
@@ -37,7 +37,7 @@ print(" ")
 
 print("Load the updated mapping object from file")
 new_map_obj = am.MapDB(2,3)
-new_map_obj.load_json('map_ps.json')
+new_map_obj.load_json('/Volumes/DGLD-SIGN/map_ps.json')
 nmass = new_map_obj.get_total_mass()
 print("    Mass difference: "+str("%.3f" % (nmass-fmass)))
 print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
@@ -61,9 +61,9 @@ if str(inpt) != "Yes":
 
 print("Connecting to Ocean client")
 print(" ")
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
+rpcport = 8332
+rpcuser = 'ocean'
+rpcpassword = 'oceanpass'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
@@ -171,8 +171,8 @@ print("Add signatures (on airgapped signing device):")
 print(" ")
 print("Export partially signed object (to directory "+os.getcwd()+")")
 print(" ")
-print("     map_ps.json")
-new_map_obj.export_json("map_ps.json")
+print("     /Volumes/DGLD-SIGN/map_ps.json")
+new_map_obj.export_json("/Volumes/DGLD-SIGN/map_ps.json")
 
 cwd = os.getcwd()
 inpt = input("Confirm transactions and mapping signed (and copied to "+cwd+" directory)? ")
@@ -185,7 +185,7 @@ print(" ")
 
 print("Load the fully signed mapping")
 signed_map_obj = am.MapDB(2,3)
-signed_map_obj.load_json('map_fs.json')
+signed_map_obj.load_json('/Volumes/DGLD-SIGN/map_fs.json')
 
 print("Check signatures")
 if signed_map_obj.verify_multisig(key_list):

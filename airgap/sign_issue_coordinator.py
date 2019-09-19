@@ -21,9 +21,9 @@ ncontrol = 1
 #version byte is 111 for testnet, 0 for mainnet
 version_byte = 52
 
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
+rpcport = 8332
+rpcuser = 'ocean'
+rpcpassword = 'oceanpass'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 
 print("Sign issuance transactions and mapping object")
