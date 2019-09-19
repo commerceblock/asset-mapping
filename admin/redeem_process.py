@@ -28,7 +28,7 @@ frzaddress = bc.pubkey_to_address(frzpubkey,addr_byte)
 
 print("Load the mapping object - connecting to S3")
 s3 = boto3.resource('s3')
-s3.Bucket('cb-mapping').download_file('map.json','map.json')
+s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
@@ -44,7 +44,7 @@ else:
 print(" ")
 
 print("Load the redeem list object - rassets.json")
-s3.Bucket('cb-mapping').download_file('rassets.json','rassets.json')
+s3.Bucket('gtsa-mapping').download_file('rassets.json','rassets.json')
 print(" ")
 
 r_obj = {}
@@ -53,9 +53,9 @@ with open('rassets.json') as file:
 
 print("Connecting to Ocean client")
 print(" ")
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
+rpcport = 8332
+rpcuser = 'ocean'
+rpcpassword = 'oceanpass'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
@@ -171,7 +171,7 @@ with open('rassets.json','w') as file:
     json.dump(r_obj,file)
 
 #upload new partially signed objects
-s3.Object('cb-mapping','rassets.json').put(Body=open('rassets.json','rb'))
+s3.Object('gtsa-mapping','rassets.json').put(Body=open('rassets.json','rb'))
 
 print("Add redemption transaction addresses to the freezelist")
 print(" ")

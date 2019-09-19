@@ -22,7 +22,7 @@ def get_available_assets():
 	#Load the mapping object
     req = requests.get('https://s3.eu-west-1.amazonaws.com/gtsa-mapping/map.json')
     s3 = boto3.resource('s3')
-    s3.Bucket('cb-mapping').download_file('rassets.json','rassets.json')
+    s3.Bucket('gtsa-mapping').download_file('rassets.json','rassets.json')
 
     req_ra = requests.get('https://s3.eu-west-1.amazonaws.com/gtsa-mapping/rassets.json')
 

@@ -17,8 +17,8 @@ print(" ")
 
 print("Load the current mapping object - connecting to S3")
 s3 = boto3.resource('s3')
-s3.Bucket('cb-mapping').download_file('map.json','map.json')
-s3.Bucket('cb-mapping').download_file('ps1_map.json','ps1_map.json')
+s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
+s3.Bucket('gtsa-mapping').download_file('ps1_map.json','ps1_map.json')
 
 map_obj = am.MapDB(2,3)
 map_obj.load_json('map.json')
@@ -58,9 +58,9 @@ if str(inpt) != "Yes":
 
 print("Connecting to Ocean client")
 print(" ")
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
+rpcport = 8332
+rpcuser = 'ocean'
+rpcpassword = 'oceanpass'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
@@ -170,4 +170,4 @@ print("     map.json")
 new_map_obj.export_json("map.json")
 print("Upload to server")
 #upload new map to S3
-s3.Object('cb-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')
+s3.Object('gtsa-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read')

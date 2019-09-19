@@ -296,7 +296,7 @@ class AMapping(QWidget):
 
     def downloadMap(self):
         s3 = boto3.resource('s3')
-        s3.Bucket('cb-mapping').download_file('map.json','map.json')
+        s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
 
         self.old_map.load_json('map.json')
         json_obj = self.old_map.get_json()
@@ -392,9 +392,9 @@ class TokenDialog(QDialog):
     def __init__(self, parent=None):
         super(TokenDialog, self).__init__(parent)
 
-        rpcport = 18884
-        rpcuser = 'user1'
-        rpcpassword = 'password1'
+        rpcport = 8332
+        rpcuser = 'ocean'
+        rpcpassword = 'oceanpass'
         url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
         ocean = rpc.RPCHost(url)
 
@@ -402,7 +402,7 @@ class TokenDialog(QDialog):
         token_ratio,hour = am.token_ratio()
 
         s3 = boto3.resource('s3')
-        s3.Bucket('cb-mapping').download_file('map.json','map.json')
+        s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
 
         self.setWindowTitle("Token Report")
 

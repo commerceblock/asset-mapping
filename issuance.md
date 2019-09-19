@@ -14,7 +14,7 @@ The default policy of the issuance is configured as 2-of-3: this means that only
 
 The coordinator runs the script `issue_token_coordinator.py` which must be configured with the following parameters:
 
-1. The S3 bucket name in the `boto3` calls (default: `cb-mapping`)
+1. The S3 bucket name in the `boto3` calls (default: `gtsa-mapping`)
 2. The Ocean node RPC details: `rpcuser`, `rpcpassword` and `rpcport`
 3. The reissuance token address `reissuanceToken`
 
@@ -34,7 +34,7 @@ If the script completes without error, it produces two files which are written t
 
 The confirmer runs the script `issue_token_confirmer.py` which must be configured with the following parameters:
 
-1. The S3 bucket name in the `boto3` calls (default: `cb-mapping`)
+1. The S3 bucket name in the `boto3` calls (default: `gtsa-mapping`)
 2. The Ocean node RPC details: `rpcuser`, `rpcpassword` and `rpcport`
 3. The reissuance token address `reissuanceToken`
 

@@ -6,7 +6,7 @@ Prerequisites:
 
 * The `amap` library is installed and/or available in the path of the directory where the scripts are run
 * The Ocean client is available via an RPC connection
-* An S3 remote file storage bucket is available and configured with write permissions for each controller (all scripts are configured for the bucket `cb-mapping`)
+* An S3 remote file storage bucket is available and configured with write permissions for each controller (all scripts are configured for the bucket `gtsa-mapping`)
 
 ### Controller Set-up
 

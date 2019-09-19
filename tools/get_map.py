@@ -10,7 +10,7 @@ import sys
 
 print("Load the mapping object - connecting to S3")
 s3 = boto3.resource('s3')
-s3.Bucket('cb-mapping').download_file('map.json','map.json')
+s3.Bucket('gtsa-mapping').download_file('map.json','map.json')
 print(" ")
 
 map_obj = am.MapDB(2,3)

@@ -21,8 +21,8 @@ ncontrol = 2
 #version byte is 111 for testnet, 0 for mainnet
 version_byte = 52
 
-rpcport = 18884
-rpcuser = 'user1'
+rpcport = 8332
+rpcuser = 'ocean'
 rpcpassword = 'password1'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 
