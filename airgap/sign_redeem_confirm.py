@@ -22,7 +22,7 @@ print("Sign mapping object")
 print(" ")
 
 map_obj = am.MapDB(2,3)
-map_obj.load_json(objdir+'map_ps.json')
+map_obj.load_json(objdir+'/Volumes/DGLD-SIGN/map_ps.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str("%.3f" % fmass))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
@@ -44,6 +44,6 @@ print("Add signature to mapping object:")
 map_obj.sign_db(privkey,ncontrol)
 print(" ")
 
-map_obj.export_json(objdir+"map_fs.json")
+map_obj.export_json(objdir+"/Volumes/DGLD-SIGN/map_fs.json")
 
-print("Fully signed mapping objects exported to map_fs.json in directory "+objdir)
+print("Fully signed mapping objects exported to /Volumes/DGLD-SIGN/map_fs.json in directory "+objdir)

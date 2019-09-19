@@ -173,8 +173,8 @@ map_obj.update_height(nblkh)
 print(" ")
 print("Export partially signed object (to directory "+os.getcwd()+")")
 print(" ")
-print("     map_us.json")
-map_obj.export_json("map_us.json")
+print("     /Volumes/DGLD-SIGN/map_us.json")
+map_obj.export_json("/Volumes/DGLD-SIGN/map_us.json")
 
 inpt = input("Confirm transactions and mapping signed? ")
 if str(inpt) != "Yes":
@@ -185,5 +185,5 @@ print(" ")
 print("Upload artially signed mapping object to cloud")
 
 #upload new partially signed objects
-s3.Object('gtsa-mapping','ps_map.json').put(Body=open('map_ps.json','rb'))
+s3.Object('gtsa-mapping','ps_map.json').put(Body=open('/Volumes/DGLD-SIGN/map_ps.json','rb'))
 print("Contact confirmer to complete the redemption authentication")

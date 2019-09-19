@@ -30,7 +30,7 @@ print("Sign issuance transactions and mapping object")
 print(" ")
 
 map_obj = am.MapDB(2,3)
-map_obj.load_json(objdir+'map_us.json')
+map_obj.load_json(objdir+'/Volumes/DGLD-SIGN/map_us.json')
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str("%.3f" % fmass))
 print("    Timestamp: "+str(map_obj.get_time())+" ("+datetime.fromtimestamp(map_obj.get_time()).strftime('%c')+")")
@@ -46,7 +46,7 @@ key_list = con_keys.list_keys()
 print(" ")
 
 print("Load the partially signed transaction")
-with open(objdir+'tx_us.json','r') as file:
+with open(objdir+'/Volumes/DGLD-SIGN/tx_us.json','r') as file:
     partial_tx = json.load(file)
 
 print(" ")
@@ -118,7 +118,7 @@ for issit in range(numiss):
 
 pSigTxList["numiss"] = str(numiss)
 
-with open(objdir+"tx_ps.json",'w') as file:
+with open(objdir+"/Volumes/DGLD-SIGN/tx_ps.json",'w') as file:
     json.dump(pSigTxList,file)
 
 print(" ")
@@ -126,6 +126,6 @@ print("Add signature to mapping object:")
 map_obj.sign_db(privkey,ncontrol)
 print(" ")
 
-map_obj.export_json(objdir+"map_ps.json")
+map_obj.export_json(objdir+"/Volumes/DGLD-SIGN/map_ps.json")
 
-print("Partially signed objects exported to map_ps.json and tx_ps.json in directory "+objdir)
+print("Partially signed objects exported to /Volumes/DGLD-SIGN/map_ps.json and /Volumes/DGLD-SIGN/tx_ps.json in directory "+objdir)

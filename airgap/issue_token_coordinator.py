@@ -213,9 +213,9 @@ map_obj.update_height(bheight)
 print(" ")
 print("Export partially signed data objects (to directory "+os.getcwd()+")")
 print(" ")
-print("     map_us.json")
-print("     tx_us.json")
-map_obj.export_json("map_us.json")
+print("     /Volumes/DGLD-SIGN/map_us.json")
+print("     /Volumes/DGLD-SIGN/tx_us.json")
+map_obj.export_json("/Volumes/DGLD-SIGN/map_us.json")
 
 #save for archive
 map_obj.export_json("map_us_log.json",True)
@@ -229,16 +229,16 @@ for issit in range(numiss):
 
 issuancetxList["numiss"] = numiss
 
-with open("tx_us.json",'w') as file:
+with open("/Volumes/DGLD-SIGN/tx_us.json",'w') as file:
     json.dump(issuancetxList,file)
 
 try:
-    os.remove('tx_ps.json')
+    os.remove('/Volumes/DGLD-SIGN/tx_ps.json')
 except OSError:
     pass
 
 try:
-    os.remove('map_ps.json')
+    os.remove('/Volumes/DGLD-SIGN/map_ps.json')
 except OSError:
     pass
 
@@ -254,8 +254,8 @@ nfound = 0
 for count in range(4):
 	try:
 		#upload new partially signed objects 
-		s3.Object('gtsa-mapping','tx_ps.json').put(Body=open('tx_ps.json','rb'))
-		s3.Object('gtsa-mapping','map_ps.json').put(Body=open('map_ps.json','rb'))
+		s3.Object('gtsa-mapping','/Volumes/DGLD-SIGN/tx_ps.json').put(Body=open('/Volumes/DGLD-SIGN/tx_ps.json','rb'))
+		s3.Object('gtsa-mapping','/Volumes/DGLD-SIGN/map_ps.json').put(Body=open('/Volumes/DGLD-SIGN/map_ps.json','rb'))
 	except:
 		inpt = input("ERROR: files not found. Check they have been copied correctly? ")
 		if str(inpt) != "Yes":

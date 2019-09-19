@@ -53,14 +53,14 @@ if str(inpt) != "Yes":
 print(" ")
 
 print("Fetch the partially signed objects")
-s3.Bucket('gtsa-mapping').download_file('map_ps.json','map_ps.json')
-s3.Bucket('gtsa-mapping').download_file('tx_ps.json','tx_ps.json')
+s3.Bucket('gtsa-mapping').download_file('/Volumes/DGLD-SIGN/map_ps.json','/Volumes/DGLD-SIGN/map_ps.json')
+s3.Bucket('gtsa-mapping').download_file('/Volumes/DGLD-SIGN/tx_ps.json','/Volumes/DGLD-SIGN/tx_ps.json')
 print(" ")
 
 print("Load the updated mapping object")
 print(" ")
 new_map_obj = am.MapDB(2,3)
-new_map_obj.load_json('map_ps.json')
+new_map_obj.load_json('/Volumes/DGLD-SIGN/map_ps.json')
 nmass = new_map_obj.get_total_mass()
 print("    Mass difference: "+str("%.3f" % (nmass-fmass)))
 print("    Timestamp: "+str(new_map_obj.get_time())+" ("+datetime.fromtimestamp(new_map_obj.get_time()).strftime('%c')+")")
@@ -91,7 +91,7 @@ with open('p2sh.json','r') as file:
 print(" ")
 
 print("Load the partially signed transaction")
-with open('tx_ps.json','r') as file:
+with open('/Volumes/DGLD-SIGN/tx_ps.json','r') as file:
     partial_tx = json.load(file)
 print(" ")
 print("Connecting to Ocean client")
@@ -177,19 +177,19 @@ for issit in range(numiss):
 print(" ")
 
 try:
-    os.remove('tx_fs.json')
+    os.remove('/Volumes/DGLD-SIGN/tx_fs.json')
 except OSError:
     pass
 
 try:
-    os.remove('map_fs.json')
+    os.remove('/Volumes/DGLD-SIGN/map_fs.json')
 except OSError:
     pass
 
-print("Add confirmer signature (on airgapped signing device) to exported files map_ps.json and tx_ps.json")
+print("Add confirmer signature (on airgapped signing device) to exported files /Volumes/DGLD-SIGN/map_ps.json and /Volumes/DGLD-SIGN/tx_ps.json")
 print(" ")
 cwd = os.getcwd()
-inpt = input("Confirm transactions and mapping signed (and copied to "+cwd+" directory as map_fs.json and tx_fs.json)? ")
+inpt = input("Confirm transactions and mapping signed (and copied to "+cwd+" directory as /Volumes/DGLD-SIGN/map_fs.json and /Volumes/DGLD-SIGN/tx_fs.json)? ")
 if str(inpt) != "Yes":
     inpt = input ("Response not recognised. Please type 'Yes' to continue. ")
 if str(inpt) != "Yes":
@@ -198,8 +198,8 @@ if str(inpt) != "Yes":
 print(" ")
 
 try:
-    open('tx_fs.json','r').read()
-    open('map_fs.json','r').read()
+    open('/Volumes/DGLD-SIGN/tx_fs.json','r').read()
+    open('/Volumes/DGLD-SIGN/map_fs.json','r').read()
 except:
     inpt = input("ERROR: files not found. Check they have been copied correctly? ")
     if str(inpt) != "Yes":
@@ -209,8 +209,8 @@ except:
         sys.exit()
 
 try:
-    open('tx_fs.json','r').read()
-    open('map_fs.json','r').read()
+    open('/Volumes/DGLD-SIGN/tx_fs.json','r').read()
+    open('/Volumes/DGLD-SIGN/map_fs.json','r').read()
 except:
     print("ERROR: files not found. ")
     print("Exit")
@@ -218,11 +218,11 @@ except:
 
 
 print("Load the fully signed transaction")
-with open('tx_fs.json','r') as file:
+with open('/Volumes/DGLD-SIGN/tx_fs.json','r') as file:
     signed_tx = json.load(file)
 
 print("Load the fully signed mapping")
-with open('map_fs.json','r') as file:
+with open('/Volumes/DGLD-SIGN/map_fs.json','r') as file:
     signed_map = json.load(file)
 
 for issit in range(numiss):
@@ -258,7 +258,7 @@ if str(inpt) != "Yes":
 print(" ")
 
 signed_map_obj = am.MapDB(2,3)
-signed_map_obj.load_json('map_fs.json')
+signed_map_obj.load_json('/Volumes/DGLD-SIGN/map_fs.json')
 print("Check mapping signatures: ")
 if signed_map_obj.verify_multisig(key_list):
     print("    Signatures verified")
