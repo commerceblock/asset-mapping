@@ -5,26 +5,26 @@ import bitcoin as bc
 from datetime import datetime
 import amap.rpchost as rpc
 import json
-import boto3
+import requests
 import sys
 
 print("Token Report")
 
 print("Load the mapping object - connecting to S3")
-s3 = boto3.resource('s3')
-s3.Bucket('cb-mapping').download_file('map.json','map.json')
+
+req = requests.get('https://s3.eu-west-1.amazonaws.com/gtsa-mapping/map.json')
 
 map_obj = am.MapDB(2,3)
-map_obj.load_json('map.json')
+map_obj.init_json(req.json())
 fmass = map_obj.get_total_mass()
 print("    Total mass: "+str("%.3f" % fmass))
 print(" ")
 
 print("Connecting to Ocean client")
 print(" ")
-rpcport = 18884
-rpcuser = 'user1'
-rpcpassword = 'password1'
+rpcport = 8332
+rpcuser = 'ocean'
+rpcpassword = 'oceanpass'
 url = 'http://' + rpcuser + ':' + rpcpassword + '@localhost:' + str(rpcport)
 ocean = rpc.RPCHost(url)
 
