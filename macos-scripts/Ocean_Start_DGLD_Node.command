@@ -1,10 +1,9 @@
 #!/bin/bash
 #this is a comment-the first line sets bash as the shell script
 
-clear
 if pgrep -x "oceand" | grep -v pgrep >&-
 then
-	echo "Ocean server is running"
+	echo "Ocean server online"
 	echo -e
 else
 	echo "Ocean server starting..."
