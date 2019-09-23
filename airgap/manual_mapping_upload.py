@@ -12,6 +12,10 @@ from datetime import datetime
 
 s3 = boto3.resource('s3')
 
+
 #upload new map to S3
+print("Uploading map.json to AWS")
+print(" ")
 s3.Object('gtsa-mapping','map.json').put(Body=open('map.json','rb'),ACL='public-read',ContentType='application/json')
+print("Upload successful")
 print(" ")

@@ -1,5 +1,6 @@
 #!/bin/bash
 #this is a comment-the first line sets bash as the shell script
-cd asset-mapping/airgap/;
-python3 issue_token_confim.py;
+clear
+cd $HOME/asset-mapping/tools;
+python3 token_report.py;
 exit;
