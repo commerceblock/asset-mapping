@@ -9,6 +9,6 @@ then
 	echo "Ocean server offline"
 	osascript -e 'display notification "goldnode has stopped successfully" with title "GoldNode"'
 else
-	echo "The ocean server is not currently running"
+	echo "Ocean server is not currently running"
 	echo -e
 fi

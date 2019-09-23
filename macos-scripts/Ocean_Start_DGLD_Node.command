@@ -6,12 +6,12 @@ then
 	echo "Ocean server online"
 	echo -e
 else
-	echo "Ocean server starting..."
-	echo -e
 	$HOME/ocean/src/oceand -datadir=$HOME/goldnode_main -v &
+	echo "Ocean server starting..."
 	sleep 2
-	echo "Blockchain Info:"
 	echo -e
-	$HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main getblockchaininfo
-	osascript -e 'display notification "goldnode has started successfully" with title "GoldNode"'
+	sleep 2
+	BlockCount=$($HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main getblockcount)
+	echo "BlockCount =" "$BlockCount"
+	osascript -e 'display notification "GoldNode has started with BlockCount '$BlockCount'" with title "GoldNode"'
 fi

@@ -3,7 +3,6 @@
 
 ./Ocean_Start_DGLD_Node.command
 
-echo ''
 echo 'BlockCount:'
 $HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main/ getblockcount
 
