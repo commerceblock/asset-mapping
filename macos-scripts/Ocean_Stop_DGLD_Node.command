@@ -5,7 +5,7 @@ if pgrep -x "oceand" | grep -v pgrep >&-
 then
 	$HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main stop
 	sleep 2
-	echo -e
+	clear
 	echo "Ocean server offline"
 	osascript -e 'display notification "goldnode has stopped successfully" with title "GoldNode"'
 else
