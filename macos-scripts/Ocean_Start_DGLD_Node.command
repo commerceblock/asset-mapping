@@ -11,7 +11,7 @@ else
 	sleep 2
 	echo -e
 	sleep 2
-	BlockCount=$($HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main getblockcount)
-	echo "BlockCount =" "$BlockCount"
+	blockcount=$($HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main getblockcount)
+	echo "BlockCount =" "$blockcount"
 	osascript -e 'display notification "GoldNode has started with BlockCount '$BlockCount'" with title "GoldNode"'
 fi
