@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./Ocean_Start_DGLD_Node.command
+./Ocean_Start_DGLD_Node.sh
 
 while true; do
 	echo "Enter Blockheight for Blockhash"

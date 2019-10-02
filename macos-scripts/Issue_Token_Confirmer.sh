@@ -1,9 +1,10 @@
 #!/bin/bash
 #this is a comment-the first line sets bash as the shell script
 
-./Ocean_Start_DGLD_Node.command
+
+./Ocean_Start_DGLD_Node.sh
 
 clear
 cd $HOME/asset-mapping/airgap/;
-python3 issue_token_coordinator.py;
+python3 issue_token_confim.py;
 exit;

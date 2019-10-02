@@ -1,7 +1,7 @@
 #!/bin/bash
 #this is a comment-the first line sets bash as the shell script
 
-./Ocean_Start_DGLD_Node.command
+./Ocean_Start_DGLD_Node.sh
 
 echo 'BlockchainInfo:'
 $HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main getblockchaininfo
