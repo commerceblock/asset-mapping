@@ -8,10 +8,10 @@ then
 else
 	$HOME/ocean/src/oceand -datadir=$HOME/goldnode_main -v &
 	echo "Ocean server starting..."
-	sleep 0
+	sleep 2
 	echo -e
-	sleep 0
+	sleep 2
 	blockcount=$($HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main getblockcount)
-	echo "BlockCount =" "$blockcount"
-	osascript -e 'display notification "GoldNode has started with BlockCount '$BlockCount'" with title "GoldNode"'
+	echo "Blockcount =" "$blockcount"
+	osascript -e 'display notification "GoldNode has started with Blockcount '$blockcount'" with title "GoldNode"'
 fi
