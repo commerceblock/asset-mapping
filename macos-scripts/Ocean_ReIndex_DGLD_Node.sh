@@ -7,7 +7,7 @@ then
 	$HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main stop
 	sleep 1
 	echo ""
-	if pgrep -x "oceand" | grep -v pgrep >&-; then echo "killall oceand"
+	if pgrep -x "oceand" | grep -v pgrep >&-; then echo killall oceand
 	sleep 2
 	fi;
 fi
