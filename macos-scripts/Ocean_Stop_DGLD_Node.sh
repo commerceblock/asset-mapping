@@ -13,3 +13,7 @@ else
 	echo "Ocean server is not currently running"
 	echo -e
 fi
+
+# Confirm exit command
+echo ""
+read -n 1 -s -r -p "Press any key to continue";

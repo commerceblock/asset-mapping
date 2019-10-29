@@ -15,3 +15,7 @@ else
 	osascript -e 'display notification "GoldNode has started with Blockcount '$blockcount'" with title "GoldNode"'
 	exit
 fi
+
+# Confirm exit command
+echo ""
+read -n 1 -s -r -p "Press any key to continue";

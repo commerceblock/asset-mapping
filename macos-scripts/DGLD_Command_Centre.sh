@@ -1,8 +1,10 @@
 #!/bin/Bash
 
 clear
-printf '\033[8;65;90t'
+printf '\033[8;50;120t'
 cd $HOME/asset-mapping/macos-scripts
+
+./Ocean_AutoStart_DGLD_Node.sh
 
 RED='\033[0;31m'
 AMBER='\033[0;33m'
@@ -43,15 +45,15 @@ then
 # Blockchain sync check from explorer api [+/- block sync tolerance level]
 if
 	[[ $blockheight_node == '' ]]; then blockheight_node=$"0"; fi
-while (( $blockheight_node < $blockheight_exp ));
+while blockheight_node=$($HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main/ getblockcount)
+(( $blockheight_node < $blockheight_exp ));
 do
-	printf "\033[5m${AMBER}Blockchain synchronising...${NC}\033[0m"
-	blockheight_node=$($HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main/ getblockcount)
-	echo -e $blockheight_node
-	sleep 2
-		# Local node blockheight
+	printf "\033[1A"
+	printf "\033[5m${AMBER}Local node synchronising...$blockheight_node${NC}\033[0m"
+	echo ""
 done
-echo -n "Local Blockheight: "; echo $blockheight_node;
+	printf "\033[1A"
+	echo -ne "Local Node Blockheight: "; echo $blockheight_node;
 else printf "${RED}Node not running${NC}"; echo ""
 fi
 
@@ -78,7 +80,10 @@ else
 exec=$(echo "$menu" | grep -w "$menuid" | awk '{ print $2 }')
 ./"$exec"
 echo ""
-read -n 1 -s -r -p "Press any key to continue"
+
+# Confirm exit command
+# read -n 1 -s -r -p "Press any key to continue"
+
 clear
 fi
 done

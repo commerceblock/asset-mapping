@@ -1,9 +1,7 @@
 #!/bin/bash
 
-./Ocean_Start_DGLD_Node.sh
-
 while true; do
-	echo "Enter Blockheight for Blockhash"
+	echo "Enter Blockheight for Blockhash ('00' to exit)"
 	read blockheight
 	if [[ -z $blockheight ]] ; then exec
 	elif [[ $blockheight == "00" ]] ; then exit ; echo "Exiting DGLD Command Launcher"; echo ""; exit
