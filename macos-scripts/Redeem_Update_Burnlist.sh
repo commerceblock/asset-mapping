@@ -1,9 +1,9 @@
 #!/bin/bash
 #this is a comment-the first line sets bash as the shell script
 
-./Ocean_Start_DGLD_Node.command
-
-clear
 cd /$HOME/asset-mapping/admin;
-python3 redeem_process.py;
-exit;
+python3 burnlist.py;
+
+# Confirm exit command
+echo ""
+read -n 1 -s -r -p "Press any key to continue";
