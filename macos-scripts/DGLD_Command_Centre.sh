@@ -49,7 +49,7 @@ while blockheight_node=$($HOME/ocean/src/ocean-cli -datadir=$HOME/goldnode_main/
 (( $blockheight_node < $blockheight_exp ));
 do
 	printf "\033[1A"
-	printf "\033[5m${AMBER}Local node synchronising...$blockheight_node${NC}\033[0m"
+	printf "\033[5m${AMBER}Node synchronising...$blockheight_node${NC}\033[0m"
 	echo ""
 done
 	printf "\033[1A"

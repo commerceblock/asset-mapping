@@ -6,4 +6,5 @@ then
 	echo ""
 else
 $HOME/ocean/src/oceand -datadir=$HOME/goldnode_main -v &
+sleep 2
 fi
